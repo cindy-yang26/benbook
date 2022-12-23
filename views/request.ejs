@@ -1,0 +1,109 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <link rel="stylesheet"
+		href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <title>benbook</title>
+<link type="text/css" href="../css/request.css" rel="stylesheet" />
+</head>
+<body>
+    <script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+    <script>
+        var friend = "<%= friend %>"
+        var reqSent = "<%= requestSent %>"
+
+        if (reqSent === "true") {
+            disableButton()
+        }
+
+        var rerender = function() {
+            $.ajax({
+                type: "POST",
+                url: "/checkfriendreqstatus",
+                data: {
+                    friendReq: friend
+                },
+                success: function(data) {
+                    if (data === "success") {
+                        window.location.href = '/wall?username=' + friend;
+                    } else if (data === true) {
+                        disableButton()
+                    } else if (data === false) {
+                        undisableButton()
+                    }
+                    console.log(data)
+                },   
+                error: function(data) { 
+                    alert("An error occurred, please try again.")
+                }
+            })
+        }
+        
+        var refreshTime = function() {
+            $(document).ready(function() { 
+                rerender();
+                setTimeout(refreshTime, 5000);
+           }); 
+        }
+
+        var disableButton = function() {
+            var button = document.getElementById("request")
+            button.removeChild(button.firstChild)
+            const newText = document.createTextNode("Requested")
+            button.append(newText)
+            button.disabled = true
+        }
+
+        var undisableButton = function() {
+            var button = document.getElementById("request")
+            button.removeChild(button.firstChild)
+            const newText = document.createTextNode("Request Friend")
+            button.append(newText)
+            button.disabled = false
+        }
+
+        window.addEventListener("load", function() {
+            document.getElementById("request").addEventListener("click", function() {
+                $(document).ready(function() { 
+                    $.ajax({
+                        type: "POST", 
+                        url: "/sendreq", 
+                        data: {
+                            friend: friend, 
+                        }, 
+                        success: function(data) {
+                            if (data === "success") {
+                                disableButton()
+                            } else {
+                                alert("This user doesn't exist anymore.")
+                            }
+                        }, 
+                        error: function(data) {
+                            alert("An error occurred, please try again.")
+                        }
+                    })
+                })
+            })
+
+            document.getElementById("home").addEventListener("click", function() {
+                document.location.href = '/homepage'
+            })
+        })
+
+        refreshTime()
+    </script> 
+    <div> 
+        <%- include header %>
+        <img src="/img/lock.PNG" id="lock"></img>
+        <div class="warning">
+            <p>You must be friends with <%= fullname %> <%= "(" + friend + ")" %> to view their profile</p>
+        </div>    
+        <div class="buttons">
+            <button id="request" class="btn btn-md btn-success" type="button">Request Friend</button> <br/>
+            <button id="home" class="btn btn-md btn-primary" type="button">Back to Home</button>
+        </div>
+    </div>
+</body>
+</html>

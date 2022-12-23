@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet"
+		href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+	<title>benbook</title>
+	<link type="text/css" href="../css/signup.css" rel="stylesheet" />
+</head>
+<body>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript">
+	var interests = [];
+
+	var clickBtn = function(interests, value, btn) {
+		if (btn.style.backgroundColor == 'gray') {
+			btn.style.backgroundColor = 'white';
+			var elm = interests.indexOf(value);
+			interests.splice(elm, 1);
+			console.log(interests);
+		} else {
+			btn.style.backgroundColor = 'gray';
+			interests.push(value);
+			console.log(interests);
+		}
+	}
+
+	function makeBtns(data) {
+		const span = document.createElement("SPAN");
+		for (var i = 0; i < data.length; i++) {
+			const button = document.createElement("button");
+			button.className = "btn btn-sm cat";
+			button.value = data[i];
+			button.addEventListener("click", function() { clickBtn(interests, button.value, button) });
+			const buttonCat = document.createTextNode(data[i]);
+			button.append(buttonCat);
+			span.append(button);
+		}
+		document.getElementById("buttonDiv").appendChild(span);
+	}
+
+	$(document).ready(function() {
+		$("#submit").click(function(e) {
+		var first_name = document.getElementById('first_name').value;
+		var last_name = document.getElementById('last_name').value;
+		var username = document.getElementById('uname').value;
+		var pw = document.getElementById('pw').value;
+		var email = document.getElementById('email').value;
+		var affil = document.getElementById('affil').value;
+		var bday = document.getElementById('bday').value;
+			$.ajax({
+				type: "POST",
+				url: "/createaccount",
+				data: {
+					'first_name': first_name,
+					'last_name': last_name,
+					'username': username,
+					'pw': pw,
+					'email': email,
+					'affil': affil,
+					'bday': bday,
+					'interests': JSON.stringify(interests)
+				},
+				success: function(data) {
+					if (data.length == 0) {
+						window.location.href = '/';
+					} else if (data.length == 1) {
+						window.location.href = '/';
+					} else if (data.length == 2) {
+						window.location.href = '/';
+					} else {
+						window.location.href = '/homepage';
+					}
+				},
+				error: function(data) {
+					alert("Oops! Something went wrong. Please try again");
+				}
+			});
+		});
+
+	});
+	
+	var load = function() {
+		$(document).ready(function() {
+			$.ajax({
+				type: "GET",
+				url: "/getCats",
+				success: function(data) {
+					makeBtns(data);
+				}, 
+				error: function(data) {
+					alert("Oops! Something went wrong. Please try again");
+				}
+			})
+		});
+	}
+	load();
+</script>
+	<table class="div-1" style="height:auto">
+		<tr>
+			<td style="width:60%; height:auto"><h2 class="logo">benbook</h2></td>
+			<td style="width:40%; height:auto">
+				<form action="/checklogin" method="post" class="form" style="height:auto">
+				<div class="div">
+					<label style="margin-top:12px;">Username</label>
+					<input type="text" name="uname" size="20" class="form-control col-sm-1" style="width:90%; height:27px"><br>
+				</div>
+				<div class="div">
+					<label style="margin-top:12px">Password</label>
+					<input type="password" name="pw" size="20" class="form-control col-sm-1" style="width:90%; height:27px"><br>
+				</div>
+				<div class="div">
+					<input class="login" type="submit" value="Login" style="width:100%; margin-top:18px"><br>
+				</div>
+				<div style="margin-bottom:3px; margin-top:4px; height:22px;width:100%">
+					<% if (login != undefined) { %> 
+						<span style="color:red;"><%= login %><span>
+					<% } %>	
+				</div>
+				</form>
+			</td>
+		</tr>
+	</table>
+
+	<table style="width:100%; background-color:#d1d7ea; color:black">
+		<tr>
+		<td style="width:60%" VALIGN="TOP">
+			<div style="padding-left:6%; padding-right:6%">
+				<h2 style="font-weight:bold; text-align:center; margin-top:5%; margin-bottom:5%">[ Welcome to BenBook ]</h2>
+				<h4 class="text" style="margin-bottom:4%">BenBook is an online directory that connects people
+				through social networks.</h4>
+				<h4 class="text" style="margin-bottom:4%">We have opened up BenBook for popular consumption at <span style="font-weight:bold">The University of Pennsylvania</span>.</h4>
+				<h4 class="text">You can use BenBook to:</h4>
+				<ul>
+					<li class="text">Search for other users</li>
+					<li class="text">Look up your friends' friends</li>
+					<li class="text" style="margin-bottom:4%">See a visualization of your social network</li>
+				</ul>
+				<h4 class="text">To get started, create an account. If you are already registered, you can log in.</h4>
+			</div>
+		</td>
+		<td style="width:40%">
+			<h1 style="text-align:left; font-weight:bold; font-size:30px">Sign Up!</h1>
+			<h3 style="margin-top:0; margin-bottom: 10px; font-size:20px">It's free and always will be.</h3>
+			<div style="height:15px;">
+				<% if (signup != undefined) { %> 
+					<span style="color:red;"><%= signup %><span>
+				<% } %>
+			</div>
+			<form action="" method="" onSubmit="return false;" class="form">
+				<input type="text" id="first_name" size="20" class="form-control" placeholder="First name"><br><br>
+	  
+				<input type="text" id="last_name" size="20" class="form-control" placeholder="Last name"><br><br>
+	  
+				<input type="text" id="uname" size="20" class="form-control" placeholder="Username"><br>
+					  
+				<input type="text" id="pw" size="20" class="form-control" placeholder="Password"><br>
+	  
+				<input type="text" id="email" size="20" class="form-control" placeholder="Email"><br><br>
+
+				<input type="text" id="affil" size="20" class="form-control" placeholder="Affiliation (e.g. Penn, Yale, CalTech)"><br><br>
+			</form>
+
+			    <label for="bday" style="margin-bottom:0"><h4 style="font-size:16px">Birthday:</h4></label><br>
+				<input type="text" id="bday" size="20" class="form-control" placeholder="01/01/2000" style="width:80%; margin-bottom:0">
+	  
+				<label for="interests" style="margin-top:0; margin-bottom:0"><h4 style="font-size:16px">Interests:</h4></label><br>
+				<div id="buttonDiv" style="margin-bottom:0; margin-right:20%;"></div>
+				<button id="submit" class="btn btn-lg" style="margin-top:20px; color:white">Sign up</button><br>
+		</td>
+		</tr>
+	</table>
+</body>
+</html>

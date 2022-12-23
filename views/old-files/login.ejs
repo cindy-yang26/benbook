@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet"
+		href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<style type="text/css">
+		body {
+			padding-top: 40px;
+			padding-bottom: 40px;
+			background-color: white;
+		}
+		.login {
+			max-width: 330px;
+			margin: 0 auto;
+		}
+		.login .form-control {
+			margin-bottom: 10px;
+		}
+		
+		
+	</style>
+</head>
+<body>
+  <div class="login">
+	  <h1 style="text-align:center; font-weight:bold">Welcome to BenFrends!</h1>
+      <h3 style="text-align:center; font-weight:bold">Please login below</h3>
+
+	  <p style="color:red;"><%= message %><p>
+	  
+	  <form action="/checklogin" method="post">
+	  	<label for="uname">Username:</label><br>
+	  	<input type="text" name="uname" size="20" class="form-control" placeholder="username"><br>
+	  	
+	  	<lable for="pw">Password:</label><br>
+	  	<input type="text" name="pw" size="20" class="form-control" placeholder="password"><br>
+	  	
+	  	<input type="submit" value="Login" class="btn btn-lg btn-primary btn-block"><br>
+		
+		<a href="/signup">Don't have an account? Create one!</a><br>
+	</form>
+  </div>
+	
+</body>
+</html>

@@ -1,0 +1,140 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>benfrends</title>
+</head>
+<body>
+    <script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+    <script type="text/javascript"> 
+        var prevTable = {};
+        var refreshTime = function() {
+            $(document).ready(function() { 
+                $.ajax({
+                  type: "POST",
+                  url: "/getreqslist",
+                  success: function(data) {
+                        if (!checkSame(data, prevTable)) {
+                            prevTable = data; 
+                            writeTable(prevTable);
+                        } 
+                  },  
+                  error: function(data) { 
+                      alert("An error occurred, please try again.")
+                  }
+              })
+               setTimeout(refreshTime, 5000);
+           }); 
+        }
+        
+        var checkSame = function(table1, table2) {
+            count = 0; 
+            for (const [key, value] of Object.entries(table1)) {
+                if (table2[key] === undefined) {
+                    return false; 
+                } else {
+                    for (var i = 0; i < value.length; i++) {
+                        if (table1[key][i] !== table2[key][i]) {
+                            return false; 
+                        }
+                    }
+                    count += 1
+                }
+            }
+            if (count === Object.keys(table2).length) {
+                return true; 
+            }
+            return false;
+        }
+
+        var rejectFriend = function(username) {
+            $(document).ready(function() { 
+                $.ajax({
+                    type: "POST",
+                    url: "/rejectFriend",
+                    data: {
+					    'friend': username,
+				    },
+                    success: function(data) {
+                        writeTable(data)
+                    },  
+                    error: function(data) { 
+                        alert("An error occurred, please try again.")
+                    }
+                })
+            })
+        }
+
+        var acceptFriend = function(username) {
+            $(document).ready(function() { 
+                $.ajax({
+                    type: "POST",
+                    url: "/acceptFriend",
+                    data: {
+					    'friend': username,
+				    },
+                    success: function(data) {
+                        writeTable(data)
+                    },  
+                    error: function(data) { 
+                        alert("An error occurred, please try again.")
+                    }
+                })
+            })
+        }
+
+        var writeTable = function(table) {
+            while (document.getElementById("friendReqs").firstChild) {
+                document.getElementById("friendReqs").removeChild(document.getElementById("tableBody").firstChild)
+            }
+            if (Object.keys(table).length > 0) {
+                for (const [key, value] of Object.entries(table)) {
+                    const row = document.createElement("tr")
+                    const cell = document.createElement("td")
+                    const cellText = document.createTextNode(key)
+                    cell.append(cellText)
+                    row.appendChild(cell)
+                    for (var i = 0; i < value.length; i++) {
+                        const cell = document.createElement("td")
+                        const cellText = document.createTextNode(value[i])
+                        cell.append(cellText)
+                        row.appendChild(cell)
+                    }
+                    const cell2 = document.createElement("td")
+                    const button = document.createElement("button")
+                    button.id = key+"accept"
+                    button.addEventListener("click", function() { acceptFriend(key) })
+                    const buttonText = document.createTextNode("accept")
+                    button.append(buttonText)
+                    cell2.append(button)
+                    row.appendChild(cell2)
+                    document.getElementById("friendReqs").appendChild(row)
+                    const cell3 = document.createElement("td")
+                    const button2 = document.createElement("button")
+                    button2.id = key+"deny"
+                    button2.addEventListener("click", function() { rejectFriend(key) })
+                    const buttonText2 = document.createTextNode("deny")
+                    button2.append(buttonText2)
+                    cell3.append(button2)
+                    row.appendChild(cell3)
+                    document.getElementById("friendReqs").appendChild(row)
+                }
+            }
+        }
+        refreshTime()
+    </script> 
+    <table class="table table-inverse">
+        <thead>
+          <tr>
+            <th>Username</th>
+            <th>Name</th>
+            <th>Affiliation</th>
+            <th>Online</th>
+            <th>Accept</th>
+            <th>Deny</th>
+          </tr>
+        </thead>
+        <tbody id="friendReqs"></tbody>
+      </table>
+</body>
+</html>

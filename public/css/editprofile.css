@@ -1,0 +1,119 @@
+html, body {
+    margin:0;
+    padding:0;
+    font-family: "Lucida Grande", Verdana;
+    font-size: 0.9em;
+    background-color:#d1d7ea;
+}
+.login {
+    max-width: 330px;
+    margin: 0 auto;
+}
+.login .form-control {
+    margin-bottom: 10px;
+}
+.header {
+    width: 100%;
+    height: auto;
+    background-color: #4267B2;
+    position:relative;
+    margin-top:0;
+    padding: 0;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    display: flex;
+    align-items: center; 
+}
+.logo {
+    color: white;
+    font-weight:bold;
+    margin-bottom:5px;
+    margin-top:5px;
+    margin-left:20%;
+    margin-right:10px;
+    display: flex;
+    align-items: center; 
+    font-size:20px;
+}
+table, tr, td {
+    border-collapse: collapse;
+}
+tr {
+    line-height:40px;
+    border-bottom: none;
+    border-top: solid 1px gray;
+}
+.info {
+    margin-left: auto;
+    margin-right: auto;
+    width: 60%;
+}
+.col1 {
+    font-weight:bold;
+    width:20%;
+}
+.col2 {
+    width:60%;
+}
+.col3 {
+    width:15%;
+}
+.btn {
+    margin: 3px;
+    font-weight:bold;
+}
+#buttonDiv {
+    height: 120px;
+    overflow-y: scroll;
+}
+#x {
+    display:none;
+}
+#temp {
+    position:absolute;
+    right:10px;
+    top:0px;
+    font-size:15px;
+    padding: 3px;
+    border-radius: 50%;
+    cursor:pointer;
+}
+#x:checked~.interests {
+    visibility:visible;
+}
+.center,.interests {
+position:absolute;
+top:50%;
+left:50%;
+transform:translate(425px,170px);
+}
+#click-me {
+display:block;
+width:100%;
+}
+.interests {
+visibility:hidden;  
+width: 16%;
+height: auto;
+background: white;
+box-shadow: 3px 3px 5px rgba(67, 71, 79, 0.342);
+padding-top: 6px;
+padding-left: 10px;
+padding-right: 10px;
+padding-bottom: 6px;
+box-sizing: border-box;
+border-radius: 5px;
+}
+.btn.home {
+    background-color:#4267B2; 
+}
+.btn.home:hover {
+    background-color: #2b416e;
+    transition: 0.5s;
+}
+.btn.cat {
+    background-color: white;
+}
+.btn.cat:hover, .btn.btn-block:hover {
+    background-color: rgb(173, 169, 169);
+    transition: 0.5s;
+}

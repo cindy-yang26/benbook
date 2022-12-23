@@ -1,0 +1,900 @@
+<!DOCTYPE html >
+<html>
+<head>
+    <!--meta http-equiv="Content-Type" content="text/html; charset=UTF-8" /-->
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+    <script src="https://code.jquery.com/jquery-3.5.0.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- <script src="https://benbook.hojack.dev/socket.io/socket.io.js"></script> -->
+    <link type="text/css" href="../css/chats.css" rel="stylesheet" />
+    <link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+    <title>benbook</title>
+</head>
+<body>
+    <script type="text/javscript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script language="javascript" type="text/javascript">
+        var socket = io();
+        var room = false; 
+        var currRoom; 
+        var selected = null;
+        var user;
+        var refreshes = 0;
+        var roomNames = {};
+        var roomList = [];
+        var friendsList = <%- JSON.stringify(friends) %>;
+
+        // get friends list
+        var rerender = function() {
+            $(document).ready(function() { 
+                $.ajax({
+                  type: "POST",
+                  url: "/getfriendslist",
+                  data: {
+                    user: user
+                  },
+                  success: function(data) {
+                        if (!checkSame(data, friendsList)) {
+                            friendsList = data; 
+                            newTable(friendsList)
+                        } 
+                  },  
+                  error: function(data) { 
+                      alert("An error occurred, please try again.")
+                  }
+              });
+            })
+        }
+
+        // <% for (const [key, value] of Object.entries(friends)) { %>
+        //                 <% if (value[2] == true) { %>
+        //                     <div class="friend-elem"> 
+        //                         <tr> 
+        //                             <td id="row"> 
+        //                                 <p class="name"> <%= value[0] %> </p> 
+        //                                 <button class="chat-btn" onclick="validate(<%= JSON.stringify(key) %>)">
+        //                                     chat <span class="glyphicon glyphicon-envelope"></span>
+        //                                 </button>
+        //                             </td> 
+        //                         </tr> 
+        //                     </div> 
+        //                 <% } %>
+        //             <% } %>
+
+        //handles displaying the online users
+        var newTable = function(table) {
+            while (document.getElementById("friends-table").firstChild) {
+                document.getElementById("friends-table").removeChild(document.getElementById("friends-table").firstChild)
+            }
+            if (Object.keys(table).length > 0) {
+                for (const [key, value] of Object.entries(table)) {
+                    if (value[2] === true) {
+                        const elem = document.createElement("div")
+                        elem.className = "friend-elem"
+                        const tr = document.createElement("tr")
+                        elem.appendChild(tr)
+                        const td = document.createElement("td")
+                        td.id = "row"
+                        tr.appendChild(td)
+                        const name = document.createElement("p")
+                        name.className = "name"
+                        name.append(document.createTextNode(value[0]))
+                        td.appendChild(name)
+                        const btn = document.createElement("BUTTON")
+                        btn.className = "chat-btn"
+                        btn.addEventListener("click", function() { validate(key) })
+                        btn.append(document.createTextNode("chat "))
+                        const icon = document.createElement("SPAN")
+                        icon.className = "glyphicon glyphicon-envelope"
+                        btn.append(icon)
+                        td.appendChild(btn)
+                        document.getElementById("friends-table").appendChild(elem)
+                    }
+                }
+            }
+        }
+        
+        var refreshTime = function() {
+            $(document).ready(function() { 
+                rerender();
+                setTimeout(refreshTime, 5000);
+           }); 
+        }
+
+        //see if the tables have changed
+        var checkSame = function(table1, table2) {
+            count = 0; 
+            for (const [key, value] of Object.entries(table1)) {
+                if (table2[key] === undefined) {
+                    return false; 
+                } else {
+                    for (var i = 0; i < value.length; i++) {
+                        if (table1[key][i] !== table2[key][i]) {
+                            return false; 
+                        }
+                    }
+                    count += 1
+                }
+            }
+            if (count === Object.keys(table2).length) {
+                return true; 
+            }
+            return false;
+        }
+        
+        //function that creates the userID 
+        function generateChatId(userList) {
+            var sorted = userList.sort();
+            var id = sorted.join(", ");
+            return id;
+        }
+
+        //generate a chatroom name
+        function randomGen(rm) {
+            var arr = ['ben',
+            'franklin',
+            'button',
+            'benjamin',
+            'quaker',
+            'pilgrim',
+            'foundingfather',
+            'boston',
+            'philosopher',
+            'independence',
+            'liberty',
+            'justice',
+            'penn',
+            ];
+            var name = arr[Math.floor(Math.random() * arr.length)];
+            var num  = Math.floor(Math.random() * 100);
+            var res =  name+"room"+num;
+            if (roomList && roomList.includes(res)) {
+                return randomGen(rm);
+            }
+            roomNames[rm] = res;
+            roomList.push(res);
+            $.post("/addsession", {user : user, obj : JSON.stringify(roomNames)}, function(data) {
+                    if (!data) {
+                        console.log("err in storing");
+                    }
+            })
+            if (room && rm == currRoom) {
+                $("#groupname").text(res);
+            }
+            return res;
+        }
+
+        //get the members of the current room
+        var getMembers = async function() {
+            if (room) {
+                var prev = $("#chat-members").text(); 
+                var objlist;
+                    var memberNames = [];
+                    //render members on the right
+                    await $.post('/getmembers', {id : currRoom} ,function(data) {
+                        if (data) {
+                            setTimeout(()=>{}, 3000);
+                            console.log(data.members)
+                            objlist = data.members;
+                            for (let obj of objlist) {
+                                memberNames.push(obj.S);
+                            }
+                        } else {
+                            console.log("could not get members")
+                        }
+                    })
+                    var newMembers = "Members: " + memberNames.join(", ");
+                    if (prev != newMembers){
+                    $("#chat-members").text("Members: " + memberNames.join(", ")); 
+                }
+            }
+            setTimeout(getMembers, 5000); 
+        }
+
+        //initiate everything by
+        var generateSession = function() {
+            if (roomNames && roomNames.length != 0) {
+                for (let id in roomNames) {
+                    let name = roomNames[id];
+                    roomList.push(name);
+                    let temp = id.split(", ");
+                    let obj = temp.join("-");
+                    if ($("#option-"+obj).length == 0) { //add the invites to the html
+                        var option = document.createElement("option");
+                            option.setAttribute("class", "notification")
+                            option.setAttribute("id", "option-" + obj);
+                            option.setAttribute("key", id);
+                            option.prepend(name);
+                            $(".online-users").append(option);
+                    }       
+                }
+            }
+            getCurrInvites();
+        }
+
+         //function that gets the invites and renders it in the dropdown
+         var getCurrInvites = function() {
+                $.get('/loadinvites', async function(data) {
+                    if (data.success == true) {
+                        currList = []; 
+                        // get list of all current options
+                        $('.option').each(function() {
+                            currList.push(this.id);
+                        });
+                        // iterate through the new list of invites
+                        for (let elem of data.list) {
+                            var thisroom = false;
+                            if (elem.S == currRoom) thisroom = true;
+                            let temp = elem.S.split(", ");
+                            let betterList = [];
+                            for (let l of temp) {
+                                if (l != "") {
+                                    betterList.push(l.replace(/,/g,""));
+                                }
+                            }
+                            let obj = betterList.join("-");
+                            if ($("#option-"+obj).length == 0) { //add the new invite to the html
+                                if ($(".chats-notification").length == 0 && refreshes > 1 && !thisroom ){
+                                    var notification = document.createElement("span");
+                                    notification.setAttribute("class", "chats-notification");
+                                    $("#chats").append(notification);
+                                    $(".chats-notification").prepend("&#128308;");
+                                }
+                                var option = document.createElement("option");
+                                option.setAttribute("class", "option");
+                                option.setAttribute("class", "notification")
+                                option.setAttribute("id", "option-" + obj);
+                                option.setAttribute("key", elem.S);
+                                if (refreshes > 1 && !thisroom) {
+                                    var notif = document.createElement("span");
+                                    notif.setAttribute("class", "option-notification");
+                                    notif.prepend(" NEW");
+                                    option.append(notif);
+                                }
+                                option.prepend(randomGen(elem.S));
+
+                                $(".online-users").append(option);
+                            } else { //the invite is already in the dropdown so remove it from currlist
+                                var index = currList.indexOf("option-" + obj);
+                                if (index !== -1) {
+                                    currList.splice(index, 1);
+                                }
+                            }                            
+                        }
+                        //these are all the elements that need to be removed from the dropdown bc they are no longer in invites
+                        currList.forEach(element => { 
+                            //this is to handle the case where you are currently selecting a room that you have just left
+                            if (element == "option-"+selected) { 
+                                selected = null;
+                                $("#join-online").attr('disabled', 'true');
+                            }
+                            //else just remove the element
+                            $("#" + element).remove();
+                        })
+                    } else {
+                        $(".option").remove();
+                        selected = null;
+                    }
+            });
+            if (refreshes <2) refreshes++;
+            setTimeout(getCurrInvites, 7000); 
+        }
+
+        //function to scroll to the bottom automatically after loading the messages
+        function scrollToBottom() {
+            var m = document.getElementById("message-container");
+            m.scrollTo(0, m.scrollHeight);
+        }
+        
+        //general function to call when joining a room
+        async function joiningRoom(id, user) {
+            if (roomNames[id] && $("#option-"+(id.split(", ").join("-"))).length !=0) {
+                $("#groupname").text(roomNames[id]);
+            } 
+            
+            $("#not-in-room").hide();
+            $(".div-me").remove();
+            $(".div-other").remove();
+            $(".div-notif").remove();
+            //socket join this room
+            socket.emit('join room', {
+                room: id,
+                user: user,
+            });
+            //change location
+            $.post('/updatelocation', {user: user, value: id}, function(data){});
+            if (!room) { //joined chat
+                room = true;
+                $("#chat-messages").show();
+                $(".chat-spec").show();
+                $("#leave").show();
+            } 
+            var usernames = id.split(", ");
+            var memberNames = [];
+            var newChatList = [];
+            // post request that renders chats from existing room 
+            await $.post('/room', {id : id}, async function(data) {
+                var members = data.members;
+                if (data && members) { //join room if not in room 
+                    var inRoom = false;
+                    for (let mem of members) {
+                        if (mem.S == user) inRoom = true;
+                    }
+                    if (!inRoom) {
+                        //postrequest to add member to room 
+                        $.post('/addmembers', { id : id, user : user},function(data){})
+                    }
+                }
+                if (data && data.texts && data.texts.length >=1) { //render texts
+                    for (let text of data.texts) {
+                        let u = text.L[0].S;
+                        let t = text.L[1].S;
+                        var div = document.createElement("div");
+                        var user_temp = document.createElement("h4");
+                        var message_temp = document.createElement("h5");
+                        if (u === user) {
+                            div.setAttribute("class", "div-me");
+                            message_temp.setAttribute("class", "me");
+                            message_temp.appendChild(document.createTextNode(t));
+                            div.append(user_temp);
+                        } 
+                        else if ("" === u) {
+                            div.setAttribute("class", "div-notif");
+                            message_temp.setAttribute("class", "notif");
+                            message_temp.appendChild(document.createTextNode(t))
+                        }
+                        else {
+                            div.setAttribute("class", "div-other");
+                            user_temp.setAttribute("class", "h-other");
+                            message_temp.setAttribute("class", "other");
+                            user_temp.appendChild(document.createTextNode(u));
+                            message_temp.appendChild(document.createTextNode(t))
+                            div.append(user_temp);
+
+                        }
+                        div.append(message_temp);
+                        $('#message-container').append(div);
+                    }
+                }
+                if (!data || ( data  && data.newChat)) { //create a new chat
+                    $.post('/createroom', {id: id, user : user}, function(data){});
+                    $("#chat-members").text("Members: " + id); //display members
+                } else {
+                    var objlist;
+                    var memberNames = [];
+                    //render members on the right
+                    await $.post('/getmembers', {id : id} ,function(data) {
+                        if (data) {
+                            setTimeout(()=>{}, 2000);
+                            objlist = data.members;
+                            for (let obj of objlist) {
+                                memberNames.push(obj.S);
+                            }
+                        } else {
+                            console.log("could not get members")
+                        }
+                    })
+                    $("#chat-members").text("Members: " + memberNames.join(", ")); //display members
+                }
+                
+                //finally tell everyone that I have joined the chat
+                var mesg = user + " has joined the room";
+                socket.emit('chat message', {
+                    text: mesg,
+                    sender: user,
+                    room: id,
+                    notif: true,
+                });
+                scrollToBottom();
+            });
+        }
+
+        $(document).ready(async function() {
+            $.get('/session', function(data) {
+                user = data.uname;
+                if (!room) {
+                    //initially if the chat room is not open make sure they are not in any location (room)
+                    $.post('/updatelocation', {user: user, value: ""}, function(data){});                
+                }   
+            });
+            //get the previous state from db
+             $.post('/getsession', {user : user} ,function(data) {
+                        if (data) {
+                            console.log(data.roomobj);
+                            roomNames = JSON.parse(data.roomobj);
+                            generateSession();
+                        } else {
+                            roomNames = {};
+                            generateSession();
+                        }
+            })
+            setTimeout(getMembers, 500);
+            refreshTime()
+            $("#chat-messages").hide();
+            $(".chat-spec").hide();
+            $("#leave").hide();
+            $("#not-in-room").show()
+
+            //do something when recieve a chat message for this room
+            socket.on('chat message', function (msg) {
+                if (msg.room == currRoom) {
+                    var div = document.createElement("div");
+                    var user_temp = document.createElement("h4");
+                    var message_temp = document.createElement("h5");
+                    if(user === msg.sender) {
+                        div.setAttribute("class", "div-me");
+                        message_temp.setAttribute("class", "me");
+                        message_temp.appendChild(document.createTextNode(msg.text));
+                        div.append(user_temp)
+                        
+                    } 
+                    else if ("" === msg.sender) {
+                        div.setAttribute("class", "div-notif");
+                        message_temp.setAttribute("class", "notif");
+                        message_temp.appendChild(document.createTextNode(msg.text))
+                    } 
+                    else {
+                        message_temp.setAttribute("class", "other");
+                        user_temp.setAttribute("class", "h-other");
+                        div.setAttribute("class", "div-other");
+                        message_temp.appendChild(document.createTextNode(msg.text));
+                        user_temp.appendChild(document.createTextNode(msg.sender));
+                        div.append(user_temp)
+                    }
+                    div.append(message_temp);
+                    $('#message-container').append(div);
+                    scrollToBottom();
+
+                }
+            });
+
+            $("#send-btn").on("click", function () {
+                if ($('#message-input').val() !== '') { 
+                    var t = $('#message-input').val();
+                    // emit message to room
+                    socket.emit('chat message', {
+                        text: t,
+                        sender: user,
+                        room: currRoom,
+                    });
+                    $('#message-input').val('');
+                    $('#message-input').focus();
+                    //call post request to add comment to db
+                    $.post('/addtext', {user : user, text : t, id : currRoom}, function(data) {
+                        if (!data.success) { 
+                            console.log("err");
+                        }
+                    });
+                }
+            });
+
+            $("a").on("click", function () {
+                //when leaving the page write to db the previous state
+                $.post("/addsession", {user : user, obj : JSON.stringify(roomNames)}, function(data) {
+                    if (!data) {
+                        console.log("err in storing");
+                    }
+                })
+            });
+
+            $("#chat-btn").on("click", function () {
+                var username = $("#")
+                validate()
+            });
+
+            // adding user to open chat
+            $("#add-btn").on("click", function() {
+                //("generating room..."); 
+                $("#usermessageright").text(""); //reset message to ""
+                var username = $("#add-input").val();
+                if (username.trim().length == 0)  {
+                    $("#usermessageright").text("please provide a valid username"); 
+                    return; 
+                }
+                if (username == user) {
+                    $("#usermessageright").text("unfortunately you cannot chat with yourself"); 
+                    return;
+                }
+                $("#add-input").val("");
+                //first check if friends
+                $.post('/checkfriend', {friend : username}, function(data) {
+                    if (data.isFriend) {
+                        //then check to make sure the user is valid/is online
+                        $.post('/online', {user : username}, function(data) {
+                            if (data.success) { 
+                                //make a groupchat 
+                                let list = currRoom.split(", ");
+                                let alreadyInvited = false;
+                                for (let name of list) {
+                                    if (username == name) {
+                                        alreadyInvited = true;
+                                    }
+                                }
+                                if (!alreadyInvited){ 
+                                    // tell everyone i have moved 
+                                    var mesg = user + " has added " + username + " and moved to a different group chat";
+                                    socket.emit('chat message', {
+                                        text: mesg,
+                                        sender: user,
+                                        room: currRoom,
+                                        notif: true,
+                                    });
+                                    list.push(username);
+                                    currRoom = generateChatId(list);
+                                    joiningRoom(currRoom, user);
+                                    //then send invites to all people in previous chat to my new chat
+                                    for (let u of list) {
+                                        $.post('/online', {user : u}, function(data) {
+                                                if (data.success) { //send  invite
+                                                    $.post('/sendinvite', {user : u, id: currRoom}, function(data) {
+                                                        console.log("sending invite");
+                                                    });
+                                                }
+                                         });
+                                    }                                
+                                    //send invite to yourself
+                                    $.post('/sendinvite', {user : user, id : currRoom}, function(date) {
+                                            if (data.message) {
+                                                console.log("error message: " + data.message);
+                                                $("#usermessageright").text(data.message);
+                                            }
+                                    });
+                                } else if ( $("#chat-members").text().split(": ")[1].split(", ").includes(username) ||
+                                    $("#chat-members").text().split(": ")[1].split(",").includes(username)
+                                ){ //send invite again to that user
+                                    $("#usermessageright").text(username + " is already in the chat");
+                                } else {
+                                    $.post('/sendinvite', {user : username, id : currRoom}, function(date) {
+                                            if (data.message) {
+                                                console.log("error message: " + data.message);
+                                                $("#usermessageright").text(data.message);
+                                            }
+                                    });
+                                }
+                            } else { //something went wrong
+                                console.log("message: " + data.message);
+                                $("#usermessageright").text(data.message);
+                            }
+                        });
+                    } else {
+                        $("#usermessageright").text(username + " is not your friend yet")
+                    }
+                });
+            });
+
+            //when clicking the leave chat button (aka leaving the chat room)
+            $("#leave").on("click", async function () {
+                //remove from lists
+                var tempName = roomNames[currRoom];
+                delete roomNames[currRoom];
+                $.post("/addsession", {user : user, obj : JSON.stringify(roomNames)}, function(data) {
+                    if (!data) {
+                        console.log("err in storing");
+                    }
+                })
+
+
+                //remove from dropdown
+                if (currRoom == selected) { //handles if deleted is the selected one
+                    selected = null;
+                    $("#join-online").attr('disabled', 'true');
+                }
+                $("#option-" + currRoom.split(", ").join("-")).remove(); //else just remove
+
+                var prevRoom = currRoom;
+                //remove the room from my invites
+                $.post('/removeinvite', {me: user , id: currRoom}, function(data){});
+                $("#usermessage").text(""); //reset error message to ""
+                //first emit notification that I have left to the chat
+                var mesg = user + " has left the chat";
+                socket.emit('chat message', {
+                    text: mesg,
+                    sender: user,
+                    room: currRoom,
+                    notif: true,
+                });
+                //then close the chat room visually
+                room = false;
+                currRoom = null;
+                $("#chat-messages").hide();
+                $(".chat-spec").hide();
+                $("#not-in-room").show();
+                $("#leave").hide();
+                $("#chat-members").text("");
+                $(".div-me").remove();
+                $(".div-other").remove();
+                $(".div-notif").remove();
+                $("#groupname").text("");
+                //then leave socket room
+                socket.emit('leave room', {
+                    room: currRoom,
+                });
+                // change location to null
+                 $.post('/updatelocation', {user: user, value: ""}, function(data){});
+                // finally remove me from the room members 
+                $.post('/removemember', {id : prevRoom, user : user}, function(data){});
+            });
+
+            //tracks when dropdown changes
+            $(".online-users").change(function() {
+                selected = $('.online-users').find('option:selected').attr("key"); //set selected to selected id
+                console.log(selected);
+                $("#join-online").removeAttr('disabled'); //remove diabled from the join chat button
+            })
+
+            //when clicking the join chat button with invite
+            $("#join-online").on("click", function() {
+                //rm is the actual room id that the selected user is in
+                var rm = $('.online-users').find('option:selected').attr("key");
+                $("#usermessage").text(""); //reset message to ""
+                if (rm == currRoom) {
+                    $("#usermessage").text("already in the invited chatroom");//might have to change this????
+                } else {
+                    $(".div-me").remove();
+                    $(".div-other").remove();
+                    $(".div-notif").remove(); // remove all the texts in ui
+                    selected = null;
+                    $("#initial-option").attr('selected', 'selected');
+                    $("#option-"+rm).removeAttr('selected');
+                    $(".online-users").val("");
+                    $("#join-online").attr('disabled', 'true');
+                    // set the new room id
+                    currRoom = rm;
+                    joiningRoom(currRoom, user);
+
+                    $(".chats-notification").remove();
+                    $(".option-notification").remove();
+                } 
+            });
+        });
+
+        //header 
+        window.onload = function() {
+            document.getElementById("searchInput").addEventListener("input", function() {
+                searchInput(document.getElementById("searchInput").value)
+            })
+            document.getElementById("searchInput").addEventListener("propertychange", function() {
+                searchInput(document.getElementById("searchInput").value)
+            })
+            document.getElementById("searchBtn").addEventListener("click", function() {
+                var uName = document.getElementById("searchInput").value
+                if (uName.length > 0) {
+                    checkSearch(uName)
+                }
+            })
+            const element = document.getElementById("message-container");
+            //element.scrollTop = element.scrollHeight;
+        }
+        var closeReqs = function() {
+            while (document.getElementById("searchSugg").firstChild) {
+                document.getElementById("searchSugg").removeChild(document.getElementById("searchSugg").firstChild)
+            }
+        }
+        document.addEventListener("click", function (e) {
+            closeReqs();
+        });
+        
+        function dropDown() {
+            document.getElementById("dropdown").classList.toggle("show");
+        } 
+
+        //validate the selected user
+        function validate(username) {
+            console.log(username)
+            if (username.trim().length == 0)  {
+                $("#usermessage").text("please provide a valid username"); 
+                return; 
+            }
+            if (username == user) {
+                $("#usermessage").text("unfortunately you cannot chat with yourself"); 
+                return;
+            }
+            $("#user").val("");
+            //first check if friends
+            $.post('/checkfriend', {friend : username}, function(data) {
+                if (data.isFriend) {
+                    //then check to make sure the user is valid/is online
+                    $.post('/online', {user : username}, function(data) {
+                        if (data.success) { 
+                            //start new chat with this user
+                            var temproom = generateChatId([user, username]);
+                            $("#groupname").text("generating chat...")
+                            $.post('/sendinvite', {user : username, id : temproom}, function(date) {
+                                console.log("sending invite to room " + temproom + " to " + username);
+                                if (data.message) {
+                                    console.log("error message: " + data.message);
+                                    $("#usermessage").text(data.message);
+                                }
+                                if (data.success) { //enter chatroom
+                                    room = true;
+                                    $("#usermessage").text("");
+                                    $("#chat-messages").show();
+                                    $(".chat-spec").show();
+                                    $("#leave").show();
+                                    currRoom = temproom;
+                                    joiningRoom(currRoom, user);
+                                    //send invite to yourself
+                                    $.post('/sendinvite', {user : user, id : temproom}, function(date) {
+                                        if (data.message) {
+                                            $("#usermessage").text(data.message);
+                                        }
+                                    });
+                                }
+                            });
+                        } else { //something went wrong
+                            console.log("message: " + data.message);
+                            $("#usermessage").text(data.message);
+                        }
+                    });
+                } else {
+                    $("#usermessage").text(username + " is not your friend yet")
+                }
+            });
+        }
+
+        var searchInput = function(text) {
+            console.log(text)
+            $(document).ready(function() {
+                $.ajax({
+                    type: "POST", 
+                    url: "/searchterm", 
+                    data: {
+                        searchTerm: text
+                    }, 
+                    success: function(data) {
+                        console.log(data)
+                        renderSearches(data)
+                    }, 
+                    error: function(data) {
+                        alert("An error occurred, please try again.")
+                    }
+                })
+            })
+        }
+
+        var checkSearch = function(uName) {
+            $(document).ready(function() {
+                $.ajax({
+                    type: "POST", 
+                    url: "/userprofile", 
+                    data: {
+                        user: uName
+                    }, 
+                    success: function(data) {
+                        console.log("Data: " + data)
+                        if (data.Items) {
+                            window.location.href = "/wall?username="+uName
+                        } else {
+                            window.location.href = "/error"
+                        }
+                    }, 
+                    error: function(data) {
+                        alert("An error occurred, please try again.")
+                    }
+                })
+            })
+        }
+
+        var renderSearches = function(data) {
+            while (document.getElementById("searchSugg").firstChild) {
+                document.getElementById("searchSugg").removeChild(document.getElementById("searchSugg").firstChild)
+            }
+            for (var i = 0; i < data.length; i++) {
+                const uName = data[i][0].S
+                const userDiv = document.createElement("div")
+                userDiv.id = "userSuggestion"+uName
+                userDiv.className = "userSugg"
+                userDiv.addEventListener("click", function() {
+                    var sugg = document.getElementById("usernameSugg"+uName).textContent
+                    document.getElementById("searchInput").value = sugg
+                    window.location.href = "/wall?username="+uName
+                })
+                const username = document.createElement("p")
+                username.id = "usernameSugg"+uName
+                username.className = "usernameSugg"
+                var input = document.getElementById("searchInput").value
+                if ((data[i][0].S).startsWith(input)) {
+                    username.append(document.createTextNode(input))
+                    const span = document.createElement("SPAN")
+                    span.id = "boldUname"
+                    span.append(document.createTextNode(data[i][0].S.substr(input.length)))
+                    username.append(span);
+                } else {
+                    username.append(document.createTextNode(data[i][0].S))
+                }
+                const fullname = document.createElement("p")
+                fullname.id = "fullnameSugg"
+                fullname.append(document.createTextNode("(" + data[i][1].S + ")"))
+                userDiv.appendChild(username)
+                userDiv.appendChild(fullname)
+                document.getElementById("searchSugg").appendChild(userDiv)
+            }
+        }
+    </script>
+    <div class="header" >
+        <div class="logo">
+            benbook
+        </div>
+        <div class="search">
+            <input id="searchInput" type="text" placeholder="Search..."></input>
+            <button id="searchBtn" type="searchBtn"><span class="glyphicon glyphicon-search" style="padding:3px"></span></button>
+        </div>
+        <div class="links">
+            <a href="/homepage">Home</a>  
+            <a href="/wall">My Wall</a>
+            <a href="/news">News</a>
+            <button onclick="dropDown()" id="profileBtn"><span class="glyphicon glyphicon-user"></span></button>
+        </div>
+    </div>
+    <div id="searchSugg"></div>
+    <div id="dropdown" class="content">
+        <a href="/editprofile">Edit my profile</a>
+        <a href="/logout">Logout</a>
+    </div>
+    <main class="main">
+        <div class="left">
+            <div class="centered-left">
+                <h1 id="chats">Chats</h1>
+                <div class="dropdown-container">
+                    <form id="drop" action="" method="" onsubmit="return false">
+                        <div id="select">
+                            <select class="online-users" style="cursor: pointer;">
+                                <option id="initial-option" value="" selected="selected" hidden="hidden">
+                                    <p class="join-text"> Join an Existing Chat </p> 
+                                </option>
+                            </select>
+                        </div>
+                        <input disabled id="join-online" type="submit" value="Chat">
+                    </form>
+                </div>
+                <div class="text-cont2">
+                    <h2 id="newChats">Currently Online:</h2>
+                    <div id="friends-table"> 
+                    </div> 
+                </div>
+                <p id="usermessage" style="color:red"></p>
+                <br></br>
+                </div>
+            </div>
+        </div>
+        <div class="right">
+            <div id="chat-messages"> 
+                <div id="message-container">
+                </div>
+                <div id="message-form">
+                    <form id="form" onsubmit="return false">
+                        <input class="form-control" id="message-input" autocomplete="off" placeholder="Type a message...">
+                        <button id="send-btn" type="submit">
+                            <span class="glyphicon glyphicon-arrow-up"></span>
+                        </button> 
+                    </form>
+                </div>
+            </div> 
+            <div class="chat-spec"> 
+                <div class="title-container">
+                    <div id="title-top">
+                        <img src="/img/chat.png" alt="chat clipart" class="other-chat-image"></img>
+                        <div id="nameDiv"> 
+                            <p id="groupname"></p>
+                        </div>
+                        <h1 id="chat-members"></h1>
+                    </div>
+                    <div id="title-bottom">
+                        <form id="add-form" action="" method="" onsubmit="return false">
+                            <input id="add-input" type="text" name="user">
+                            <input id="add-btn" type="submit" value="Add User">
+                        </form>
+                    </div>
+                    <button id="leave" style="cursor: pointer;"><p>Ready to Go? Leave Chat</p></button>
+                    <p id="usermessageright" style="color:red"></p>
+                </div>
+            </div> 
+            <div id="not-in-room">
+                <h3 class="inviteText">Invite Friends or Join an Existing Chat</h3>
+                <h4 class="smallText">Please use the sidebar to message your friends</h4>
+                <img src="/img/facebook-chat.png" alt="chat" class="chatImage">
+            </div>
+        </div>
+    </main>
+</body>
+</html>

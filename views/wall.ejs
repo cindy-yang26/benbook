@@ -1,0 +1,670 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <link rel="stylesheet"
+		href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<title>benbook</title>
+<link type="text/css" href="../css/wall.css" rel="stylesheet" />
+</head>
+<body>   
+    <script type="text/javscript" src="//ajax.googleapis.com/ajax/libs/jquery/2.0.0/jquery.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+    <script language="javascript" type="text/javascript">
+        window.addEventListener("load", function() {
+            document.getElementById("postButton").addEventListener("click", function() {
+                if (document.getElementById("newPost").value.length !== 0) {
+                    submit(document.getElementById("newPost").value);
+                    document.getElementById("newPost").value = ""
+                }
+            })
+        });
+
+        var visualizer = function() {
+            window.open("/friendvisualization")
+        }
+
+        var user = "<%= user %>"
+        var fullname = "<%= fullname %>"
+        var prevJSONString = "";
+        var JSONObj = "";
+        var rerender = function() {
+            $.ajax({
+                type: "POST",
+                url: "/renderWalls",
+                data: {
+                    user: user
+                },
+                success: function(data) {
+                    if (prevJSONString !== data) {
+                        prevJSONString = data; 
+                        JSONObj = JSON.parse(prevJSONString)
+                        writeComments()
+                    } 
+                },  
+                error: function(data) { 
+                    alert("An error occurred, please try again.")
+                }
+            })
+        }
+        
+        var refreshTime = function() {
+            $(document).ready(function() { 
+                rerender();
+                setTimeout(refreshTime, 5000);
+           }); 
+        }
+
+        var click = function(comment, postId, time) {
+            if (comment.length > 0) {
+                $(document).ready(function() { 
+                    $.ajax({
+                        type: "POST",
+                        url: "/addComment",
+                        data: {
+                            comment: comment, 
+                            postId: postId,
+                            time: time, 
+                        },
+                        success: function(data) {
+                            rerender()
+                        },
+                        error: function(data) { 
+                            alert("An error occurred, please try again.")
+                        }
+                })
+            }); 
+            }
+        }
+
+        var submit = function(post) {
+            var time = Date.now()
+            var id = time.toString() + user 
+            $(document).ready(function() {
+                $.ajax({
+                    type: "POST", 
+                    url: "/addPost", 
+                    data: {
+                        time: time, 
+                        post: post, 
+                        id: id, 
+                        poster: user
+                    }, 
+                    success: function(data) {
+                        rerender()
+                    }, 
+                    error: function(data) {
+                        alert("An error occurred, please try again.")
+                    }
+                })
+            })
+        }
+
+        var getDate = function(timestamp) {
+            var date = new Date(timestamp);
+            var dateString = "";
+            switch(date.getMonth()) {
+                case 0:
+                    dateString = dateString.concat("January ");
+                    break;
+                case 1:
+                    dateString = dateString.concat("February ");
+                    break;
+                case 2:
+                    dateString = dateString.concat("March ");
+                    break;
+                case 3:
+                    dateString = dateString.concat("April ");
+                    break;
+                case 4:
+                    dateString = dateString.concat("May ");
+                    break;
+                case 5:
+                    dateString = dateString.concat("June ");
+                    break;
+                case 6:
+                    dateString = dateString.concat("July ");
+                    break;
+                case 7:
+                    dateString = dateString.concat("August ");
+                    break;
+                case 8:
+                    dateString = dateString.concat("September ");
+                    break;
+                case 9:
+                    dateString = dateString.concat("October ");
+                    break;
+                case 10:
+                    dateString = dateString.concat("November ");
+                    break;
+                case 11:
+                    dateString = dateString.concat("December ");
+                    break;
+            }
+            dateString = dateString.concat(date.getDate() + " at ");
+            var amPm;
+            if (date.getHours() > 12) {
+                dateString = dateString.concat((date.getHours()-12));
+                amPm = "PM";
+            } else if (date.getHours() == 0) {
+                dateString = dateString.concat("12");
+                amPm = "AM";
+            } else if (date.getHours() == 12) {
+                dateString = dateString.concat("12");
+                amPm = "PM";
+            } else {
+                dateString = dateString.concat(date.getHours());
+                amPm = "AM";
+            }
+            dateString = dateString.concat(":");
+            if (date.getMinutes() < 10) {
+                dateString = dateString.concat("0" + date.getMinutes());
+            } else {
+                dateString = dateString.concat(date.getMinutes());
+            }
+            dateString = dateString.concat(" " + amPm);
+            return dateString;
+        }
+
+        var writeComments = function() {
+            while (document.getElementById("commentDiv").firstChild) {
+                document.getElementById("commentDiv").removeChild(document.getElementById("commentDiv").firstChild)
+            }
+            for (var i = 0; i < JSONObj.length; i++) {
+                const id = JSONObj[i].id
+                const timeObj = JSONObj[i].time
+                const div = document.createElement("div")
+                div.id = "post"
+                const postedBy = document.createElement("p")
+                postedBy.id = "poster"
+                div.appendChild(postedBy)
+                postedBy.append(document.createTextNode(JSONObj[i].poster+" "))
+                const arrow = document.createElement("SPAN")
+                arrow.className = "glyphicon glyphicon-triangle-right"
+                postedBy.appendChild(arrow)
+                postedBy.append(document.createTextNode(" " + JSONObj[i].page_owner))
+                const time = document.createElement("p")
+                time.id = "time"
+                time.append(document.createTextNode(getDate(parseInt(JSONObj[i].time))))
+                div.appendChild(time)
+                const origPost = document.createElement("h3");
+                origPost.id = "postText"
+                origPost.append(document.createTextNode(JSONObj[i].origPost))
+                div.appendChild(origPost)
+
+                const numComm = document.createElement("p")
+                numComm.id = "numComments"
+                if (JSONObj[i].comments.length == 1) {
+                    numComm.append(document.createTextNode("1 comment"))
+                } else {
+                    numComm.append(document.createTextNode(JSONObj[i].comments.length + " comments"))
+                }
+                div.appendChild(numComm)
+
+                const allComments = document.createElement("div");
+                allComments.id = "comments"
+                for (var j = 0; j < JSONObj[i].comments.length; j++) {
+                    const commentDiv = document.createElement("div")
+                    commentDiv.id = "indivCommentDiv"
+                    const commenter = document.createElement("p")
+                    commenter.id = "commenter"
+                    commenter.append(document.createTextNode(JSONObj[i].comments[j][0]))
+                    commentDiv.appendChild(commenter)
+                    const comment = document.createElement("h4")
+                    comment.id = "comment"
+                    comment.append(document.createTextNode(JSONObj[i].comments[j][1]))
+                    commentDiv.appendChild(comment)
+                    allComments.appendChild(commentDiv)
+                }
+                div.appendChild(allComments)
+                const form = document.createElement("form")
+                form.id = "commentForm"
+                const input = document.createElement("input")
+                input.type = "text"
+                input.id = "newComment" + id     
+                input.className ="newComments"
+                input.placeholder = "Add a comment..."
+                form.appendChild(input)
+                const btn = document.createElement("BUTTON")
+                btn.id = "submitbtn"
+                btn.append(document.createTextNode("Comment"))
+                btn.type = "button"
+                btn.addEventListener("click", function() { 
+                    click(document.getElementById("newComment" + id).value, id, timeObj);
+                    document.getElementById("newComment" + id).value = "";
+                })
+                form.appendChild(btn)
+                div.appendChild(form)
+                document.getElementById("commentDiv").append(div)
+            }
+        }
+
+        refreshTime()
+    </script>
+    <script>
+        var currLogin = "<%= currLogin %>"
+        var userIsMe = false
+        if (currLogin === user) {
+            userIsMe = true
+        }
+        var getProfile = function() {
+            $.ajax({
+                type: "POST",
+                url: "/userprofile",
+                data: {
+                    user: user
+                },
+                success: function(data) {
+                    console.log("Data: " + data);
+                    writeProfile(data);
+                },
+                error: function(data) {
+                    alert("Error while writing profile");
+                }
+            })
+        }
+
+        var writeProfile = function(data) {
+            const fullname = document.createElement("h4")
+            fullname.id = "fullname"
+            fullname.append(document.createTextNode(data[0].first_name.S + " " + data[0].last_name.S))
+            document.getElementById("profile").appendChild(fullname)
+
+            const username = document.createElement("h5")
+            username.id = "uname"
+            const usernameLabel = document.createElement("SPAN")
+            usernameLabel.id = "unameLabel"
+            usernameLabel.append(document.createTextNode("Username: "))
+            username.appendChild(usernameLabel)
+            username.append(document.createTextNode(data[0].username.S))
+            document.getElementById("profile").appendChild(username)
+
+            const bday = document.createElement("h5")
+            bday.id = "bday"
+            const bdayLabel = document.createElement("SPAN")
+            bdayLabel.id = "bdayLabel"
+            bdayLabel.append(document.createTextNode("Born on: "))
+            bday.appendChild(bdayLabel)
+            bday.append(document.createTextNode(data[0].birthday.S))
+            document.getElementById("profile").appendChild(bday)
+
+            const email = document.createElement("h5")
+            email.id = "email"
+            const emailLabel = document.createElement("SPAN")
+            emailLabel.id = "emailLabel"
+            emailLabel.append(document.createTextNode("Email: "))
+            email.appendChild(emailLabel)
+            email.append(document.createTextNode(data[0].email.S))
+            document.getElementById("profile").appendChild(email)
+
+            const affil = document.createElement("h5")
+            affil.id = "affil"
+            const affilLabel = document.createElement("SPAN")
+            affilLabel.id = "affilLabel"
+            affilLabel.append(document.createTextNode("Affiliation: "))
+            affil.appendChild(affilLabel)
+            affil.append(document.createTextNode(data[0].affiliation.S))
+            document.getElementById("profile").appendChild(affil)
+
+            const interests = document.createElement("h5")
+            interests.id = "interests"
+            const interestLabel = document.createElement("SPAN")
+            interestLabel.id = "interestLabel"
+            interestLabel.append(document.createTextNode("Current Interests: "))
+            interests.appendChild(interestLabel)
+            var interestList = []
+            for (var i = 0; i < data[0].interests.L.length; i++) {
+                interestList.push(data[0].interests.L[i].S)
+            }
+            interests.append(document.createTextNode(interestList))
+            document.getElementById("profile").appendChild(interests)
+        }
+
+        getProfile();
+
+        var prevTable = {};
+        var prevTable2 = {};
+        var refreshTime2 = function() {
+            $(document).ready(function() { 
+                $.ajax({
+                  type: "POST",
+                  url: "/getfriendslist",
+                  data: {
+                    user: user
+                  },
+                  success: function(data) {
+                        if (!checkSame(data, prevTable)) {
+                            prevTable = data; 
+                            writeTable(prevTable);
+                        } 
+                  },  
+                  error: function(data) { 
+                      alert("An error occurred, please try again.")
+                  }
+              });
+              if (userIsMe) {
+                $.ajax({
+                    type: "POST",
+                    url: "/getreqslist",
+                    success: function(data) {
+                            if (!checkSame(data, prevTable2)) {
+                                writeFriends(data);
+                                prevTable2 = data; 
+                            } 
+                    },  
+                    error: function(data) { 
+                        alert("An error occurred, please try again.")
+                    }
+                })
+                }
+               setTimeout(refreshTime2, 5000);
+           }); 
+        }
+        
+        var checkSame = function(table1, table2) {
+            count = 0; 
+            for (const [key, value] of Object.entries(table1)) {
+                if (table2[key] === undefined) {
+                    return false; 
+                } else {
+                    for (var i = 0; i < value.length; i++) {
+                        if (table1[key][i] !== table2[key][i]) {
+                            return false; 
+                        }
+                    }
+                    count += 1
+                }
+            }
+            if (count === Object.keys(table2).length) {
+                return true; 
+            }
+            return false;
+        }
+
+        var rejectFriend = function(username) {
+            $(document).ready(function() { 
+                $.ajax({
+                    type: "POST",
+                    url: "/rejectFriend",
+                    data: {
+					    'friend': username,
+				    },
+                    success: function(data) {
+                        writeFriends(data)
+                    },  
+                    error: function(data) { 
+                        alert("An error occurred, please try again.")
+                    }
+                })
+            })
+        }
+
+        var acceptFriend = function(username) {
+            $(document).ready(function() { 
+                $.ajax({
+                    type: "POST",
+                    url: "/acceptFriend",
+                    data: {
+					    'friend': username,
+				    },
+                    success: function(data) {
+                        writeFriends(data)
+                    },  
+                    error: function(data) { 
+                        alert("An error occurred, please try again.")
+                    }
+                })
+            })
+        }
+
+        var deleteFriend = function(username) {
+            $(document).ready(function() { 
+                $.ajax({
+                    type: "POST",
+                    url: "/deleteFriend",
+                    data: {
+					    'friend': username,
+				    },
+                    success: function(data) {
+                        writeTable(data)
+                    },  
+                    error: function(data) { 
+                        alert("An error occurred, please try again.")
+                    }
+                })
+            })
+        }
+
+        var showWall = function(username) {
+            window.location.href = "/wall?username="+username
+        }
+
+        var writeFriends = function(table) {
+            while (document.getElementById("friendReqs").firstChild) {
+                document.getElementById("friendReqs").removeChild(document.getElementById("friendReqs").firstChild)
+            }
+            while (document.getElementById("reqHeader").firstChild) {
+                document.getElementById("reqHeader").removeChild(document.getElementById("reqHeader").firstChild)
+            }
+            if (Object.keys(table).length > 0) {
+                for (const [key, value] of Object.entries(table)) {
+                    const row = document.createElement("tr")
+                    row.className = "reqRow"
+                    const cell1 = document.createElement("td")
+                    const span = document.createElement("SPAN")
+                    span.id = "reqName"
+                    span.append(document.createTextNode(value[0]))
+                    cell1.append(span)
+                    const span2 = document.createElement("SPAN")
+                    span2.id = "reqSpan2"
+                    span2.append(document.createTextNode("(" + key + ")"))
+                    cell1.append(span2)
+                    row.appendChild(cell1)
+                    const cell2 = document.createElement("td")
+                    cell2.id = "buttonTd"
+                    const button = document.createElement("button")
+                    button.id = key+"accept"
+                    button.className = "accept btn btn-sm btn-success"
+                    button.addEventListener("click", function() { acceptFriend(key) })
+                    const buttonText = document.createTextNode("Accept")
+                    button.append(buttonText)
+                    cell2.append(button)
+                    row.appendChild(cell2)
+                    document.getElementById("friendReqs").appendChild(row)
+                    const cell3 = document.createElement("td")
+                    cell3.id = "buttonTd2"
+                    const button2 = document.createElement("button")
+                    button2.id = key+"deny"
+                    button2.className = "deny btn btn-sm btn-danger"
+                    button2.addEventListener("click", function() { rejectFriend(key) })
+                    const buttonText2 = document.createTextNode("Deny")
+                    button2.append(buttonText2)
+                    cell3.append(button2)
+                    row.appendChild(cell3)
+                    document.getElementById("friendReqs").appendChild(row)
+                }
+            }
+            // Request header
+            const requestTitle = document.createElement("p")
+            requestTitle.id = "reqtitle"
+            const icon = document.createElement("SPAN")
+            icon.className = "glyphicon glyphicon-question-sign"
+            requestTitle.appendChild(icon)
+            requestTitle.append(document.createTextNode("My friend requests "))
+            requestTitle.append(document.createTextNode("(" + Object.keys(table).length + ")"))
+            document.getElementById("reqHeader").appendChild(requestTitle)
+        }
+
+        var writeTable = function(table) {
+            while (document.getElementById("tableBody").firstChild) {
+                document.getElementById("tableBody").removeChild(document.getElementById("tableBody").firstChild)
+            }
+            while (document.getElementById("friendsHeader").firstChild) {
+                document.getElementById("friendsHeader").removeChild(document.getElementById("friendsHeader").firstChild)
+            }
+            if (Object.keys(table).length > 0) {
+                for (const [key, value] of Object.entries(table)) {
+                    const row = document.createElement("tr")
+                    row.className = "tableRow"
+                    const cell = document.createElement("td")
+                    cell.className = "tableCol"
+                    const userButton = document.createElement("button")
+                    userButton.id = key 
+                    userButton.className = "friendBtn";
+                    userButton.addEventListener("click", function() { showWall(userButton.id) })
+                    const cellText = document.createTextNode(value[0])
+                    userButton.append(cellText)
+                    cell.append(userButton)
+                    row.appendChild(cell)
+                    if (userIsMe) {
+                        const cell2 = document.createElement("td")
+                        const button = document.createElement("button")
+                        button.id = key
+                        button.className = "btn btn-sm"
+                        var buttonText; 
+                        button.addEventListener("click", function() { deleteFriend(button.id) })
+                        buttonText = document.createTextNode("Remove")
+                        button.append(buttonText)
+                        cell2.append(button)                    
+                        row.appendChild(cell2)
+                    }
+                    for (var i = 2; i < value.length; i++) {
+                        const cell2 = document.createElement("td")
+                        const span = document.createElement("SPAN")
+                        if (value[i] === true) {
+                            span.className = "glyphicon glyphicon-ok-circle"
+                        } else {
+                            span.className = "glyphicon glyphicon-remove-circle"
+                        }
+                        cell2.appendChild(span)
+                        row.appendChild(cell2)
+                    }
+                    document.getElementById("tableBody").appendChild(row)
+                }
+            }
+            // Friends header
+            const friendsTitle = document.createElement("p")
+            friendsTitle.id = "title"
+            const icon = document.createElement("SPAN")
+            icon.className = "glyphicon glyphicon-user friendIcon"
+            friendsTitle.appendChild(icon)
+            if (userIsMe) {
+                friendsTitle.append(document.createTextNode("My friends (" + Object.keys(table).length + ")"))
+            } else {
+                friendsTitle.append(document.createTextNode(fullname + "'s friends (" + Object.keys(table).length + ")"))
+            }
+            if (userIsMe) {
+                const vis = document.createElement("BUTTON")
+                vis.id = "visualizer"
+                vis.addEventListener("click", function() { visualizer() })
+                const buttonText = document.createTextNode("View visualizer")
+                vis.append(buttonText)
+                friendsTitle.appendChild(vis)
+            }
+            document.getElementById("friendsHeader").appendChild(friendsTitle)
+        }
+        refreshTime2();
+
+        function toChats() {
+            window.location.href = "/chats";
+        }
+        
+    </script> 
+    <%- include header %>
+    <table class="banner">
+        <tr style="height:85%">
+            <td style="vertical-align:bottom;">
+                <span class="username" style="width:70%; display:inline-block; height:15%;">
+                    <span><%= fullname %></span>
+                </span>
+            </td>
+            <td></td>
+        </tr>
+        <tr>
+            <td style="background-color:rgb(232, 232, 238); border-bottom-left-radius: 3px; border-bottom-right-radius: 3px; text-align:right;">
+                <label class="label label-default label-sm" style="color:black; font-weight:bold; font-size:13px; padding:9px; margin-left:40%; background-color:white; border:none">
+                    <span class="glyphicon glyphicon-ok"></span>
+                    Friends
+                </label>
+                <button class="btn btn-sm btn-success" style="color:black; font-weight:bold; font-size:15px; margin:8px; border:none;" type="button" id="messages-btn" onclick="return toChats();">
+                    <span class="glyphicon glyphicon-comment"></span>
+                    Messages
+                </button>  
+            </td>
+        
+        </tr>
+    </table>
+    <div id="overlay"><%= fullname.charAt(0) %></div>
+
+    <table style="margin:auto; margin-top:1.5%; width:60%">
+        <tr>
+            <td style="width:40%; margin-top:0" VALIGN="top"> 
+                <div> 
+                    <div id="profile"></div> 
+                    <div id="reqHeader"></div>
+                    <div id="requests">
+                        <table class="table table-inverse" style="margin-bottom:0">
+                            <tbody id="friendReqs"></tbody>
+                        </table>
+                    </div>
+                    <div id="friendsHeader"></div>
+                    <div id="friends">
+                        <table class="table table-inverse" style="margin-bottom:0">
+                            <!-- <thead>
+                                <tr>
+                                    <td>
+                                        <p style="margin-bottom:0;">
+                                            <span class="glyphicon glyphicon-user"></span>
+                                            <% if (currLogin === user) { %>
+                                                My friends
+                                            <% } else { %> 
+                                                <%= fullname %>'s friends 
+                                            <% } %>
+                                        </p>
+                                    </td>
+                                </tr>
+                            </thead> -->
+                            <tbody id="tableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </td>
+            <td style="width:60%;" VALIGN="top">
+                <div>
+                    <div id="postDiv">
+                        <form onsubmit="return false">
+                            <input id="newPost" type="text" placeholder="What's on your mind?"></input>
+                            <button id="postButton" type="submit">
+                                <span class="glyphicon glyphicon-send"></span>
+                                Post
+                            </button>
+                        </form>
+                    </div>
+                    <div id="commentDiv" style="float:top"></div> 
+                </div>
+            </td>
+        </tr>
+    </table>
+    
+    <!-- format of writeTable -->
+    <!-- <div id="commentDiv"> 
+        <div id="post"> (repeats per post)
+            <p id="poster"></p>
+            <p id="time"></p>
+            <h3 id="postText"></h3>
+            <p id="numComments"></p>
+            <div id="comments"> (all comments)
+                <div id="indivCommentDiv"> (repeats per comment)
+                    <p id="commenter"></p>
+                      <h4 id="comment"></h4>
+                </div> 
+            </div>
+            <form id="commentForm"> 
+                    <input id=newComment+{id} class="newComments"></input> 
+                    <button id=submitbtn></button>
+            </form> 
+        </div> 
+    </div> -->
+</body>
+</html>

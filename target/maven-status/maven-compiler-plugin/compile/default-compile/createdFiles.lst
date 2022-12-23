@@ -1,0 +1,14 @@
+edu/upenn/cis/nets2120/storage/DynamoConnector.class
+edu/upenn/cis/nets2120/rank/ComputeRanks.class
+edu/upenn/cis/nets2120/rank/livy/ComputeRanksLivy.class
+edu/upenn/cis/nets2120/rank/livy/WriteData.class
+edu/upenn/cis/nets2120/loader/IndexTedTalkInfo.class
+edu/upenn/cis/nets2120/rank/livy/NewsRankJob.class
+edu/upenn/cis/nets2120/storage/DynamoConnector$LocalServer.class
+edu/upenn/cis/nets2120/storage/SparkConnector.class
+edu/upenn/cis/nets2120/loader/LoadData.class
+edu/upenn/cis/nets2120/loader/TedTalkParser$TalkDescriptionHandler.class
+edu/upenn/cis/nets2120/loader/TedTalkParser.class
+edu/upenn/cis/nets2120/config/Config.class
+edu/upenn/cis/nets2120/rank/FetchData.class
+edu/upenn/cis/nets2120/rank/livy/MyPair.class

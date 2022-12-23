@@ -1,0 +1,130 @@
+html, body {
+    background-color:#d1d7ea;
+    margin-bottom:20px;
+}
+.header {
+    width: 100%;
+    height: auto;
+    background-color: #4267B2;
+    position:relative;
+    margin-top:0;
+    padding: 0;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    display: flex;
+    align-items: center; 
+}
+.logo {
+    color: white;
+    font-weight:bold;
+    margin-bottom:5px;
+    margin-top:5px;
+    margin-left:20%;
+    margin-right:10px;
+    display: flex;
+    align-items: center; 
+    font-size:20px;
+}
+.search {
+    margin-left: 1%;
+    display:inline-block;
+    width:40%;
+}
+#searchInput {
+    display:inline-block;
+    width:80%;
+    margin-right:0;
+    padding: 2px;
+    padding-left:10px;
+    border: none;
+    margin:0;
+}
+.search button {
+    position: absolute;
+    border: none;
+    padding:2px;
+    width:4%;
+}
+.links a:link {
+    text-decoration: none;
+}
+.links a {
+    color:white;
+    font-weight:bold;
+    display:inline-block;
+    margin-left:1vw;
+}
+#profileBtn {
+    margin-left:1vw;
+    margin-bottom:2px;
+    background-color:#4267B2;
+    border:2px solid white;
+    border-radius:5px;
+    height: 24px;
+}
+.glyphicon-user {
+    padding-top:2px;
+    padding-bottom:2px;
+    color:white;
+}
+.searchSugg {
+    position: absolute;
+    margin-left:84%;
+    background-color: white;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    z-index: 1;
+    border-radius:3px;
+}
+.content {       
+    display: none;
+    position: absolute;
+    margin-left:76%;
+    background-color: white;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    z-index: 2;
+    border-radius:3px;
+}
+.content a {
+    padding: 12px;
+    display:block;
+    color:black;
+    font-weight:bold;
+}
+.content a:link {
+    text-decoration: none;
+}
+.content a:hover {
+    background-color: rgb(232, 232, 238);
+}
+.userSugg {
+    background-color:white;
+  
+}
+.userSugg:hover {
+    background-color:rgb(232, 232, 238);
+    cursor:pointer;
+}
+.usernameSugg {
+    display:inline-block;
+    margin-left:10px;
+    padding-top:10px;
+}
+#fullnameSugg {
+    display:inline-block;
+    margin-left:5px;
+}
+#viewUser {
+    margin-left:10px;
+}
+#searchSugg {
+    position: absolute;
+    margin-left:27.25%;
+    width:32%;
+    z-index: 3;
+    box-shadow: 3px 3px 5px rgba(122, 126, 136, 0.342);
+}
+#boldUname {
+    font-weight:bold;
+}
+#test {
+    display: none
+}

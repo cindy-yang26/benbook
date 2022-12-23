@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="stylesheet"
+		href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+	<title>benbook</title>
+	<link type="text/css" href="../css/editprofile.css" rel="stylesheet" />
+</head>
+<body>
+<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script type="text/javascript">
+    $(document).ready(function() {
+		$("#pw").click(function(e) {
+		var pw = document.getElementById("password").value;
+			$.ajax({
+				type: "POST",
+				url: "/changepw",
+				data: {
+					'pw': pw		
+				},
+				success: function(data) {
+					if (data.length == 0) {
+						alert("No new password was entered");
+					} else {
+						document.getElementById("password").value = "";
+						alert("Password successfully changed!");
+						window.location.href = '/editprofile';
+					}
+				},
+				error: function(data) {
+					alert("Oops! Something went wrong. Please try again");
+				}
+			});
+		});
+
+        $("#email").click(function(e) {
+		var email = document.getElementById("newemail").value;
+			$.ajax({
+				type: "POST",
+				url: "/changeemail",
+				data: {
+					'email': email	
+				},
+				success: function(data) {
+					if (data.length == 0) {
+						alert("No new email was entered");
+					} else {
+						document.getElementById("newemail").value = "";
+						alert("Email successfully updated!")
+						window.location.href = '/editprofile';
+					}
+				},
+				error: function(data) {
+					alert("Oops! Something went wrong. Please try again");
+				}
+			});
+		});
+
+        $("#affil").click(function(e) {
+			var affil = document.getElementById("newaffil").value;
+			$.ajax({
+				type: "POST",
+				url: "/changeaffil",
+				data: {
+					'affil': affil	
+				},
+				success: function(data) {
+					if (data.length == 0) {
+						alert("No new affiliation was entered");
+					} else {
+						document.getElementById("newaffil").value = "";
+						alert("Affiliation successfully updated!")
+						window.location.href = '/editprofile';
+					}
+				},
+				error: function(data) {
+					alert("Oops! Something went wrong. Please try again");
+				}
+			});
+		});
+		
+		$("#interests").click(function(e) {
+			$.ajax({
+				type: "POST",
+				url: "/changeinterests",
+				data: {
+					'interests': JSON.stringify(interests)	
+				},
+				success: function(data) {
+					if (data.length == 0) {
+						alert("Please select at least two interests");
+					} else {
+						alert("Interests successfully updated!")
+						window.location.href = '/editprofile';
+					}
+				},
+				error: function(data) {
+					alert("Oops! Something went wrong. Please try again");
+				}
+			});
+		});
+	});
+
+	var interests = [];
+
+	var clickBtn = function(interests, value, btn) {
+		if (btn.style.backgroundColor == 'gray') {
+			btn.style.backgroundColor = 'white';
+			var elm = interests.indexOf(value);
+			interests.splice(elm, 1);
+			console.log(interests);
+		} else {
+			btn.style.backgroundColor = 'gray';
+			interests.push(value);
+			console.log(interests);
+		}
+	}
+
+	function makeBtns(data) {
+		const span = document.createElement("SPAN");
+		for (var i = 0; i < data.length; i++) {
+			const button = document.createElement("button");
+			button.className = "btn btn-sm mr-1 cat";
+			button.value = data[i];
+			button.addEventListener("click", function() { clickBtn(interests, button.value, button) });
+			const buttonCat = document.createTextNode(data[i]);
+			button.append(buttonCat);
+			span.append(button);
+		}
+		document.getElementById("buttonDiv").appendChild(span);
+	}
+
+	var load = function() {
+		$(document).ready(function() {
+			$.ajax({
+				type: "GET",
+				url: "/getCats",
+				success: function(data) {
+					makeBtns(data);
+				}, 
+				error: function(data) {
+					alert("Load error");
+					console.log("Load error");
+				}
+			})
+		});
+	}
+
+	function interestList(data) {
+		const span = document.createElement("SPAN");
+		for (var i = 0; i < data.length; i++) {
+			if (i == data.length - 1) {
+				txt = document.createTextNode(data[i].toString());
+				span.appendChild(txt);
+			} else {
+				txt = document.createTextNode(data[i].toString()+", ");
+				span.appendChild(txt);
+			}
+		}
+		document.getElementById("currInterests").appendChild(span);
+	}
+
+	var currInterests = function() {
+		$(document).ready(function() {
+			$.ajax({
+				type: "GET",
+				url: "/currInterests",
+				success: function(data) {
+					console.log(data);
+					interestList(data);
+				}, error: function(data) {
+					alert("interest error");
+					console.log("Interest error");
+				}
+			})
+		})
+	}
+	load();
+	currInterests();
+</script>
+	<%- include header %>
+	<table class="info">
+		<tr>
+			<h3 style="text-align:center; font-weight:bold; margin-bottom:20px">My Profile and Account Changes</h3>
+		</tr>
+		<tr>
+			<td class="col1">First name</td>
+			<td class="col2">
+				<%= first_name %>
+			</td>
+		</tr>
+		<tr>
+			<td class="col1">Last name</td>
+			<td class="col2">
+				<%= last_name %>
+			</td>
+		</tr>
+		<tr>
+			<td class="col1">Birthday</td>
+			<td class="col2">
+				<%= bday %>
+			</td>
+		</tr>
+		<tr>
+			<td class="col1">Username</td>
+			<td class="col2">
+				<%= username %>
+			</td>
+		</tr>
+		<tr>
+			<td class="col1">Password</td>
+			<td class="col2">
+				<input type="text" id="password" size="20" class="form-control" style="width:70%; margin-top:10px; margin-bottom:10px">
+			</td>
+			<td class="col3">
+				<button class="btn btn-sm p-4 btn-block" style="float:right" type="button" id="pw">Set new password</button>
+			</td>
+		</tr>
+		<tr>
+			<td class="col1">Email</td>
+			<td class="col2">
+				<span><%= email %></span>
+				<input type="text" id="newemail" size="20" class="form-control" style="width:70%; margin-bottom:10px;">	
+			</td>
+			<td class="col3">
+				<button class="btn btn-sm p-4 btn-block" style="float:right" type="button" id="email">Update email</button>
+			</td>
+		</tr>
+		<tr>
+			<td class="col1">Affiliation</td>
+			<td class="col2">
+				<span><%= affil %></span>
+				<input type="text" id="newaffil" size="20" class="form-control" style="width:70%; margin-bottom:10px">
+			</td>
+			<td class="col3">
+				<button class="btn btn-sm p-4 btn-block" style="float:right" type="button" id="affil">Update affiliation</button>
+			</td>
+		</tr>
+		<tr>
+			<td class="col1">Interests</td>
+			<td class="col2" style="padding-right:5%; padding-top:1%">
+				<div id="buttonDiv"></div>
+			</td>
+			<td class="col3">
+				<label for="x" class="btn btn-sm p-4" stype="button" style="float:right; color:#4267B2" id="click-me">Show interests</label>
+				<button class="btn btn-sm p-4 btn-block" style="float:right" type="button" id="interests">Update interests</button>
+			</td>
+		</tr>
+	</table>
+	<form action="/homepage" method="get" style="margin-top:25px">
+		<div style="text-align:center">
+		<input type="submit" value="Back to home" class="btn btn-md home" style="text-align:center; color:white; margin-bottom:30px"><br>
+		</div>
+	</form>
+
+	<div class="popup">
+		<input type="checkbox" id="x">
+		<div class="interests">
+		  <div style="font-weight:bold; font-size:14px; margin-bottom:5px">
+			My Current Interests
+		 </div>
+			<label for="x" id="temp">x</label>
+	
+		<form>
+			<div id="currInterests" style="margin-bottom:5px"></div>
+		</form>
+		  </div>
+		</div>
+	</div>
+</body>
+</html>

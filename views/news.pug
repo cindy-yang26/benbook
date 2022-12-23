@@ -1,0 +1,173 @@
+include article.pug
+
+html
+	head
+		title benbook
+		script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js')
+		link(rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap.min.css')
+		link(rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/css/bootstrap-theme.min.css')
+		script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.1/js/bootstrap.min.js')
+		meta(name='viewport' content='width=device-width, initial-scale=1')
+		meta(http-equiv="Content-Security-Policy" content="upgrade-insecure-requests")
+		meta(name='description', content="News")
+		meta(name='author', content='G16')
+		link(rel='stylesheet', href='../css/news.css')
+	body
+		script(type="text/javascript").
+			function dropDown() {
+				document.getElementById("dropdown").classList.toggle("show")
+			}
+			function news() {
+				window.location.href = "/news"
+			}
+			function home() {
+				window.location.href = "/homepage"
+			}
+			var searchInput = function(text) {
+				console.log(text)
+				$(document).ready(function() {
+					$.ajax({
+						type: "POST", 
+						url: "/searchterm", 
+						data: {
+							searchTerm: text
+						}, 
+						success: function(data) {
+							console.log(data)
+							renderSearches(data)
+						}, 
+						error: function(data) {
+							alert("An error occurred, please try again.")
+						}
+					})
+				})
+			}
+
+			var checkSearch = function(uName) {
+				$(document).ready(function() {
+					$.ajax({
+						type: "POST", 
+						url: "/userprofile", 
+						data: {
+							user: uName
+						}, 
+						success: function(data) {
+							console.log("Data: " + data)
+							if (data.Items) {
+								window.location.href = "/wall?username="+uName
+							} else {
+								window.location.href = "/error"
+							}
+						}, 
+						error: function(data) {
+							alert("An error occurred, please try again.")
+						}
+					})
+				})
+			}
+
+			var renderSearches = function(data) {
+				while (document.getElementById("searchSugg").firstChild) {
+					document.getElementById("searchSugg").removeChild(document.getElementById("searchSugg").firstChild)
+				}
+				for (var i = 0; i < data.length; i++) {
+					const uName = data[i][0].S
+					const userDiv = document.createElement("div")
+					userDiv.id = "userSuggestion"+uName
+					userDiv.className = "userSugg"
+					userDiv.addEventListener("click", function() {
+						var sugg = document.getElementById("usernameSugg"+uName).textContent
+						document.getElementById("searchInput").value = sugg
+						window.location.href = "/wall?username="+uName
+					})
+					const username = document.createElement("p")
+					username.id = "usernameSugg"+uName
+					username.className = "usernameSugg"
+					var input = document.getElementById("searchInput").value
+					if ((data[i][0].S).startsWith(input)) {
+						username.append(document.createTextNode(input))
+						const span = document.createElement("SPAN")
+						span.id = "boldUname"
+						span.append(document.createTextNode(data[i][0].S.substr(input.length)))
+						username.append(span);
+					} else {
+						username.append(document.createTextNode(data[i][0].S))
+					}
+					const fullname = document.createElement("p")
+					fullname.id = "fullnameSugg"
+					fullname.append(document.createTextNode("(" + data[i][1].S + ")"))
+					userDiv.appendChild(username)
+					userDiv.appendChild(fullname)
+					document.getElementById("searchSugg").appendChild(userDiv)
+				}
+			}
+
+			window.onload = function() {
+				document.getElementById("newsSearchBtn").addEventListener("click", function() {
+					var searchInput = document.getElementById("newsSearchInput").value
+					window.location.href = "/news?search=" + searchInput
+				})
+				document.getElementById("searchInput").addEventListener("input", function() {
+					searchInput(document.getElementById("searchInput").value)
+				})
+				document.getElementById("searchInput").addEventListener("propertychange", function() {
+					searchInput(document.getElementById("searchInput").value)
+				})
+				document.getElementById("searchBtn").addEventListener("click", function() {
+					var uName = document.getElementById("searchInput").value
+					if (uName.length > 0) {
+						checkSearch(uName)
+					}
+				})
+			}
+			
+			var closeReqs = function() {
+				while (document.getElementById("searchSugg").firstChild) {
+					document.getElementById("searchSugg").removeChild(document.getElementById("searchSugg").firstChild)
+				}
+			}
+			document.addEventListener("click", function (e) {
+				closeReqs();
+			});
+			
+		div(class="header")
+			div(class="logo") benbook
+			div(class="search")
+				input(id="searchInput" type="text" placeholder="Search...")
+				button(id="searchBtn" type="button")
+					span(class="glyphicon glyphicon-search" style="padding:3px")
+			div(class="links")
+				a(href="/homepage") Home
+				a(href="/wall") My Wall 
+				a(href="/news") News
+				button(onclick="dropDown()" id="profileBtn")
+					span(class="glyphicon glyphicon-user")
+		div(id="searchSugg")
+		div(class="content" id="dropdown")
+			a(href="/editprofile") Edit my profile
+			a(href="/logout") Logout
+		div(id="dropdown" class="content")
+		div(class="page-heading") 
+			if keyword
+				h1(style="font-weight:bold") News about "#{keyword}"
+			else
+				h1(style="font-weight:bold; margin-top:25px; margin-bottom:20px;") News Feed
+			div(class="newsSearch")
+				input(id="newsSearchInput" type="text" placeholder="Search for articles...")
+				button(id="newsSearchBtn" type="button")
+					span(class="glyphicon glyphicon-search" style="padding:3px")
+		div(class="news-body")
+			if !results.length
+				img(src="/img/glass.png" class="imageM")
+				p(class="warning") Oh snap! 
+				p(class="warning") There are no results.
+				div(class="buttons")
+					button(onclick="news()" id="back" class="btn btn-md btn-success" type="button") Search Again
+					button(onclick="home()" id="home" class="btn btn-md btn-primary" type="button") Go Home
+				</div>
+			else 
+				each article in results 
+					tr(style="border border-primary" class="well")
+						+show(article)
+									
+									

@@ -1,0 +1,46 @@
+link(rel='stylesheet', href='../css/article.css')
+mixin show(article)
+	script(type="text/javascript").
+		var toggleLike = function(article) {
+				console.log("hi");
+				var current = document.getElementById("likeButton"+article).class;
+				var toggle = $("#likeButton"+article)
+					.hasClass("glyphicon-heart-empty");
+				$("#likeButton"+article)
+					.toggleClass("glyphicon-heart glyphicon-heart-empty");
+				console.log(toggle);
+				$(document).ready(function() {
+					$.ajax({
+						type: "POST", 
+						url: "/toggleLike", 
+						data: {
+							article: article,
+							toggle: toggle
+						}, 
+						success: function(data) {
+							console.log(data);
+						}, 
+						error: function(data) {
+							alert("An error occurred, please try again.")
+						}
+					})
+				})
+			}
+	div(class="newsDiv")
+		table
+			tr
+				td(class="leftCol" VALIGN="top")
+					p(id="date" class="date") #{article.date.S} 
+				td(class="rightCol" VALIGN="top")
+					h3(class="title")
+						a(href=article.link.S class="headline") #{article.headline.S}
+					h5(class="category") #{article.category.S}
+					p(class="desc") #{article.short_description.S}
+					h5(class="author") 
+						div #{(article.authors.S).split(",")[0]}	
+						button(style="float:right; padding-right:25; margin-top:5px; margin-bottom:20px; border:none; background:none" type="button" onclick="toggleLike('" + article.date.S + "-" + article.aid.N + "')") 
+							if !article.liked
+								span(id="likeButton" + article.date.S + "-" + article.aid.N style="color:red; font-size:20;" class="glyphicon glyphicon-heart-empty")
+							else
+								span(id="likeButton" + article.date.S + "-" + article.aid.N style="color:red; font-size:20" class="glyphicon glyphicon-heart")
+										

@@ -1,0 +1,307 @@
+html, body {
+    background-color:#d1d7ea;
+    margin-bottom:20px;
+}
+#post {
+    width: 60%;
+    margin: auto;
+    background-color:gray;
+}
+.banner {
+    width: 60%;
+    height: 300px;
+    margin: auto;
+    background-image: linear-gradient(white, rgb(78, 77, 77));
+    border-bottom-left-radius: 3px;         
+    border-bottom-right-radius: 3px;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+}
+#overlay {
+    position:absolute;
+    background-color:#4267B2;
+    z-index:1;
+    height: 21%;
+    width: 13%;
+    margin-left: 20%;
+    transform: translate(11%, -111%);
+    border-radius: 4px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-size:90px;
+    color:white;
+}
+.username {
+    margin-left:26%;
+    margin-bottom:1.5%;
+    display:block;
+    font-size:30px;
+    font-weight:600;
+    color:white;
+}
+#post {
+    margin-top:15px;
+    width:100%;
+    padding: 2%;
+    border-radius: 3px;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    background-color:white;
+    padding:0;
+}
+#postDiv {
+    background-color:rgb(232, 232, 238);
+    text-align:right;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    border-radius: 3px;         
+    margin-bottom: 7%;
+    float:top;
+}
+#newPost {
+    height: 60px;
+    width: 100%;
+    border: 1px solid rgb(232, 232, 238);
+    border-top-left-radius: 3px;         
+    border-top-right-radius: 3px;
+    padding-left:15px;
+    font-size:20px;
+}
+#postButton {
+    margin:1.5%;
+    background-color:#4267B2;
+    color:white;
+    font-weight:bold;
+    width:15%;
+    border-color:gray;
+}
+#poster {
+    font-weight:bold;
+    font-size:16px;
+    margin-bottom:0;
+    padding-left:3%;
+    padding-top:3%;
+}
+#postText {
+    padding-left:3%;
+    padding-right:3%;
+}
+#time {
+    font-size:13px;
+    color:gray;
+    padding-left:3%;
+}
+#numComments {
+    text-align:right;
+    padding-right:3%;
+}
+#profile {
+    height:auto;
+    margin-top:-10px;
+    background-color:white;
+    margin-right:20px;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    border-radius: 3px;   
+    float:top;      
+}
+#friends {
+    max-height: 400px;
+    overflow-y:scroll;
+    background-color: white;
+    margin-right:20px;
+    margin-top:0px;
+    margin-bottom:0px;
+    float:top;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    border-bottom-left-radius: 3px;     
+}
+#requests {
+    max-height: 200px;
+    overflow-y:scroll;
+    background-color: white;
+    margin-right:20px;
+    margin-top:0px;
+    margin-bottom:0px;
+    float:top;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    border-bottom-left-radius: 3px;     
+}
+#friendsHeader, #reqHeader {
+    margin-right:20px;
+    margin-top:20px;
+    margin-bottom:0px;
+    padding-left:5px;
+    font-weight: bold;
+    font-size:17px;
+    background-color:white;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    border-top-left-radius: 3px; 
+    border-top-right-radius: 3px; 
+}
+#title, #reqtitle {
+    margin-bottom:0;
+    padding:10px;
+    font-size:15px;
+}
+#tableBody, #friendReqs {
+    max-height:60px;
+    overflow-y:scroll;
+}
+#comments {
+    background-color:rgb(232, 232, 238);
+    border-bottom-left-radius:3px;
+    border-bottom-right-radius:3px;
+    border: 1px solid rgb(232, 232, 238);
+    max-height: 120px;
+    overflow-y:scroll;
+}
+#indivCommentDiv {
+    margin-top: 10px;
+}
+#commenter {
+    padding-left:3%;
+    display:inline-block;
+    font-weight:bold;
+    font-size:15px;
+}
+#comment {
+    padding-left:3%;
+    padding-right:3%;
+    display:inline-block;
+    font-size:14px;
+}
+.newComments {
+    height: 30px;
+    border: 1px solid rgb(232, 232, 238);
+    border-top-left-radius: 3px;         
+    border-top-right-radius: 3px;
+    padding-left:15px;
+    width:80%
+}
+#commentForm {
+    width:100%;
+    padding:10px;
+    background-color: rgb(232, 232, 238);
+    border-bottom-left-radius:3px;
+    border-bottom-right-radius:3px;
+    text-align:center;
+}
+#submitbtn {
+    border:none;
+    background-color:#4267B2;
+    border-color:gray;
+    font-weight:bold;
+    color:white;    
+    height:30px;      
+    width:20%;
+    font-size:13px; 
+}
+.friendBtn {
+    background-color:white;
+    border:none;
+    color:#4267B2;
+    font-weight:bold;
+    text-align:left;
+}
+thead {
+    font-weight: bold;
+    font-size:17px;
+}
+.btn.btn-sm {
+    color:black;
+    margin-left: 20%;
+    font-weight:bold;
+}
+.glyphicon.glyphicon-ok-circle {
+    color: green;
+    font-size:20px;
+}
+.glyphicon.glyphicon-remove-circle {
+    font-size:20px;
+}
+.glyphicon.friendIcon {
+    color:black;
+    margin-right:10px;
+}
+.tableCol {
+    height:auto;
+}
+.searchSugg {
+    position: absolute;
+    margin-left:84%;
+    background-color: white;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    z-index: 1;
+    border-radius:3px;
+}
+#visualizer {
+    border: none;
+    background-color:white;
+    float:right;
+}
+#visualizer:hover {
+    color:red;
+    transition:0.2s;
+}
+#fullname {
+    font-weight:bold;
+    padding:15px;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+}
+#uname {
+    padding-left:15px;
+    padding-top:5px;
+}
+#unameLabel {
+    font-weight:bold;
+}
+#bday {
+    padding-left:15px;
+}
+#bdayLabel {
+    font-weight:bold;
+}
+#email {
+    padding-left:15px;
+}
+#emailLabel {
+    font-weight:bold;
+}
+#affil {
+    padding-left:15px;
+}
+#affilLabel {
+    font-weight:bold;
+}
+#interests {
+    padding-left:15px;
+    overflow-wrap:break-word;
+    padding-bottom:15px;
+    padding-right:15px;
+    line-height:1.5em;
+}
+#interestLabel {
+    font-weight:bold;
+}
+.reqRow {
+    padding:3px;
+}
+#reqName {
+    font-weight:bold;
+    margin-left:5px;
+}
+#reqSpan2 {
+    font-weight:400;
+    margin-left:5px;
+}
+.btn-success {
+    margin-right:-7px;
+}
+.btn-danger {
+    float:right;
+}
+#buttonTd {
+    text-align:right;
+    margin:0;
+}
+#buttonTd2 {
+    width:20%;
+}

@@ -1,0 +1,258 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<title>benbook</title>
+<link type="text/css" href="../css/homepage.css" rel="stylesheet" />
+</head>
+<body>
+    <script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+    <script type="text/javascript">
+        var user = "<%= user %>"
+        var prevJSONString = "";
+        var JSONObj = "";
+
+        var rerender = function() {
+            $.ajax({
+                type: "POST",
+                url: "/renderHome",
+                data: {
+                    user: user
+                },
+                success: function(data) {
+                    if (prevJSONString !== data) {
+                        prevJSONString = data; 
+                        JSONObj = JSON.parse(prevJSONString)
+                        writeComments()
+                    } 
+                },  
+                error: function(data) { 
+                    alert("An error occurred, please try again.")
+                }
+            })
+        }
+        var refreshTime = function() {
+            $(document).ready(function() { 
+                rerender();
+                setTimeout(refreshTime, 5000);
+           }); 
+        }
+
+        var click = function(comment, postId, time) {
+            if (comment.length > 0) {
+                $(document).ready(function() { 
+                    $.ajax({
+                        type: "POST",
+                        url: "/addComment",
+                        data: {
+                            comment: comment, 
+                            postId: postId,
+                            time: time, 
+                        },
+                        success: function(data) {
+                            rerender()
+                        },
+                        error: function(data) { 
+                            alert("An error occurred, please try again.")
+                        }
+                })
+            }); 
+            }
+        }
+
+        var submit = function(post) {
+            var time = Date.now()
+            var id = time.toString() + user 
+            $(document).ready(function() {
+                $.ajax({
+                    type: "POST", 
+                    url: "/addPost", 
+                    data: {
+                        time: time, 
+                        post: post, 
+                        id: id, 
+                        poster: user
+                    }, 
+                    success: function(data) {
+                        rerender()
+                    }, 
+                    error: function(data) {
+                        alert("An error occurred, please try again.")
+                    }
+                })
+            })
+        }
+
+        var getDate = function(timestamp) {
+            var date = new Date(timestamp);
+            var dateString = "";
+            switch(date.getMonth()) {
+                case 0:
+                    dateString = dateString.concat("January ");
+                    break;
+                case 1:
+                    dateString = dateString.concat("February ");
+                    break;
+                case 2:
+                    dateString = dateString.concat("March ");
+                    break;
+                case 3:
+                    dateString = dateString.concat("April ");
+                    break;
+                case 4:
+                    dateString = dateString.concat("May ");
+                    break;
+                case 5:
+                    dateString = dateString.concat("June ");
+                    break;
+                case 6:
+                    dateString = dateString.concat("July ");
+                    break;
+                case 7:
+                    dateString = dateString.concat("August ");
+                    break;
+                case 8:
+                    dateString = dateString.concat("September ");
+                    break;
+                case 9:
+                    dateString = dateString.concat("October ");
+                    break;
+                case 10:
+                    dateString = dateString.concat("November ");
+                    break;
+                case 11:
+                    dateString = dateString.concat("December ");
+                    break;
+            }
+            dateString = dateString.concat(date.getDate() + " at ");
+            var amPm;
+            if (date.getHours() > 12) {
+                dateString = dateString.concat((date.getHours()-12));
+                amPm = "PM";
+            } else if (date.getHours() == 0) {
+                dateString = dateString.concat("12");
+                amPm = "AM";
+            } else if (date.getHours() == 12) {
+                dateString = dateString.concat("12");
+                amPm = "PM";
+            } else {
+                dateString = dateString.concat(date.getHours());
+                amPm = "AM";
+            }
+            dateString = dateString.concat(":");
+            if (date.getMinutes() < 10) {
+                dateString = dateString.concat("0" + date.getMinutes());
+            } else {
+                dateString = dateString.concat(date.getMinutes());
+            }
+            dateString = dateString.concat(" " + amPm);
+            return dateString;
+        }
+
+        var writeComments = function() {
+            while (document.getElementById("commentDiv").firstChild) {
+                document.getElementById("commentDiv").removeChild(document.getElementById("commentDiv").firstChild)
+            }
+            for (var i = 0; i < JSONObj.length; i++) {
+                const id = JSONObj[i].id
+                const timeObj = JSONObj[i].time
+                const div = document.createElement("div")
+                div.id = "post"
+                const postedBy = document.createElement("p")
+                postedBy.id = "poster"
+                div.appendChild(postedBy)
+                postedBy.append(document.createTextNode(JSONObj[i].poster+" "))
+                const arrow = document.createElement("SPAN")
+                arrow.className = "glyphicon glyphicon-triangle-right"
+                postedBy.appendChild(arrow)
+                postedBy.append(document.createTextNode(" " + JSONObj[i].page_owner))
+                const time = document.createElement("p")
+                time.id = "time"
+                time.append(document.createTextNode(getDate(parseInt(JSONObj[i].time))))
+                div.appendChild(time)
+                const origPost = document.createElement("h3");
+                origPost.id = "postText"
+                origPost.append(document.createTextNode(JSONObj[i].origPost))
+                div.appendChild(origPost)
+
+                const numComm = document.createElement("p")
+                numComm.id = "numComments"
+                if (JSONObj[i].comments.length == 1) {
+                    numComm.append(document.createTextNode("1 comment"))
+                } else {
+                    numComm.append(document.createTextNode(JSONObj[i].comments.length + " comments"))
+                }
+                div.appendChild(numComm)
+
+                const allComments = document.createElement("div");
+                allComments.id = "comments"
+                for (var j = 0; j < JSONObj[i].comments.length; j++) {
+                    const commentDiv = document.createElement("div")
+                    commentDiv.id = "indivCommentDiv"
+                    const commenter = document.createElement("p")
+                    commenter.id = "commenter"
+                    commenter.append(document.createTextNode(JSONObj[i].comments[j][0]))
+                    commentDiv.appendChild(commenter)
+                    const comment = document.createElement("h4")
+                    comment.id = "comment"
+                    comment.append(document.createTextNode(JSONObj[i].comments[j][1]))
+                    commentDiv.appendChild(comment)
+                    allComments.appendChild(commentDiv)
+                }
+                div.appendChild(allComments)
+                const form = document.createElement("form")
+                form.id = "commentForm"
+                const input = document.createElement("input")
+                input.type = "text"
+                input.id = "newComment" + id     
+                input.className ="newComments"
+                input.placeholder = "Add a comment..."
+                form.appendChild(input)
+                const btn = document.createElement("BUTTON")
+                btn.id = "submitbtn"
+                btn.append(document.createTextNode("Comment"))
+                btn.type = "button"
+                btn.addEventListener("click", function() { 
+                    click(document.getElementById("newComment" + id).value, id, timeObj);
+                    document.getElementById("newComment" + id).value = "";
+                })
+                form.appendChild(btn)
+                div.appendChild(form)
+                document.getElementById("commentDiv").append(div)
+            }
+        }
+
+        window.addEventListener("load", function() {
+            document.getElementById("postButton").addEventListener("click", function() {
+                if (document.getElementById("newPost").value.length != 0) {
+                    submit(document.getElementById("newPost").value);
+                    document.getElementById("newPost").value = ""
+                }
+            })
+        });
+        refreshTime()
+    </script>
+    <div> 
+        <%- include header %>
+        <div class="welcome">
+            <h1 style="font-weight:bold">Welcome, <%= first_name %></h1>
+        </div>
+        <table class="main">
+            <tr>
+                <td>
+                    <div id="postDiv" style="margin-bottom:50px;">
+                        <form>
+                            <input id="newPost" type="text" placeholder="What's on your mind?"></input>
+                            <button id="postButton" type="button">Post</button>
+                        </form>
+                    </div>
+                    <div id="commentDiv"></div>            
+                </td>
+            </tr>
+        </table>
+    </div> 
+</body>
+</html>

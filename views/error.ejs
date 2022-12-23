@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<title>benbook</title>
+<link type="text/css" href="../css/error.css" rel="stylesheet" />
+</head>
+<body>
+    <script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+    <script type="text/javascript">
+        window.addEventListener("load", function() {
+            document.getElementById("home").addEventListener("click", function() {
+                window.location.href = "/homepage"
+            })
+        });
+    </script>
+    <%- include header %>
+    <img src="/img/brokenLink.png" alt="brokenchain">
+    <h2 class="head">This Page Isn't Available</h2>
+    <h4 class="text">The link may be broken, or the page may have been removed. Check to see if the link you're
+        trying to open is correct.
+    </h4>
+    <div id="btn">
+        <button id="home" class="btn btn-md btn-primary">Back to Home</button>
+    </div>
+</body>
+</html>

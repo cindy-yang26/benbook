@@ -1,0 +1,12 @@
+/home/nets2120/git/G16/src/main/java/edu/upenn/cis/nets2120/loader/IndexTedTalkInfo.java
+/home/nets2120/git/G16/src/main/java/edu/upenn/cis/nets2120/loader/LoadData.java
+/home/nets2120/git/G16/src/main/java/edu/upenn/cis/nets2120/storage/DynamoConnector.java
+/home/nets2120/git/G16/src/main/java/edu/upenn/cis/nets2120/loader/TedTalkParser.java
+/home/nets2120/git/G16/src/main/java/edu/upenn/cis/nets2120/storage/SparkConnector.java
+/home/nets2120/git/G16/src/main/java/edu/upenn/cis/nets2120/rank/livy/ComputeRanksLivy.java
+/home/nets2120/git/G16/src/main/java/edu/upenn/cis/nets2120/rank/livy/MyPair.java
+/home/nets2120/git/G16/src/main/java/edu/upenn/cis/nets2120/rank/livy/NewsRankJob.java
+/home/nets2120/git/G16/src/main/java/edu/upenn/cis/nets2120/rank/ComputeRanks.java
+/home/nets2120/git/G16/src/main/java/edu/upenn/cis/nets2120/rank/FetchData.java
+/home/nets2120/git/G16/src/main/java/edu/upenn/cis/nets2120/rank/livy/WriteData.java
+/home/nets2120/git/G16/src/main/java/edu/upenn/cis/nets2120/config/Config.java

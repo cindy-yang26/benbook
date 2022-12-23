@@ -1,0 +1,123 @@
+html, body {
+    background-color:#d1d7ea;
+    margin-bottom:20px;
+}
+.welcome {
+    text-align:center;
+    color:black;
+}
+.main {
+    margin:auto;
+    width:90%;
+}
+#postDiv {
+    width:50%;
+    margin:auto;
+}
+#commentDiv {
+    width:50%;
+    margin:auto;
+    margin-top:0;
+}
+#post {
+    margin-top:15px;
+    width:100%;
+    padding: 2%;
+    border-radius: 3px;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    background-color:white;
+    padding:0;
+}
+#postDiv {
+    background-color:rgb(232, 232, 238);
+    text-align:right;
+    box-shadow: 1px 1px 5px rgba(122, 126, 136, 0.342);
+    border-radius: 3px;         
+    margin-bottom: 7%;
+    float:top;
+    margin-top:30px;
+}
+#newPost {
+    height: 60px;
+    width: 100%;
+    border: 1px solid rgb(232, 232, 238);
+    border-top-left-radius: 3px;         
+    border-top-right-radius: 3px;
+    padding-left:15px;
+    font-size:20px;
+}
+#postButton {
+    margin:1.5%;
+    background-color:#4267B2;
+    color:white;
+    font-weight:bold;
+    width:15%;
+    border-color:gray;
+}
+#poster {
+    font-weight:bold;
+    font-size:16px;
+    margin-bottom:0;
+    padding-left:3%;
+    padding-top:3%;
+}
+#postText {
+    padding-left:3%;
+    padding-right:3%;
+}
+#time {
+    font-size:13px;
+    color:gray;
+    padding-left:3%;
+}
+#numComments {
+    text-align:right;
+    padding-right:3%;
+}
+#comments {
+    background-color:rgb(232, 232, 238);
+    border-bottom-left-radius:3px;
+    border-bottom-right-radius:3px;
+    border: 1px solid rgb(232, 232, 238);
+    max-height: 120px;
+    overflow-y:scroll;
+}
+#indivCommentDiv {
+    margin-top: 10px;
+}
+#commenter {
+    padding-left:3%;
+    display:inline-block;
+    font-weight:bold;
+    font-size:15px;
+}
+#comment {
+    padding-left:3%;
+    padding-right:3%;
+    display:inline-block;
+    font-size:14px;
+}
+.newComments {
+    height: 30px;
+    border: 1px solid rgb(232, 232, 238);
+    border-top-left-radius: 3px;         
+    border-top-right-radius: 3px;
+    padding-left:15px;
+    width:85%
+}
+#commentForm {
+    width:100%;
+    padding:10px;
+    background-color: rgb(232, 232, 238);
+    border-bottom-left-radius:3px;
+    border-bottom-right-radius:3px;
+    text-align:center;
+}
+#submitbtn {
+    border:none;
+    background-color:#4267B2;
+    border-color:gray;
+    font-weight:bold;
+    color:white;    
+    height:30px;        
+}

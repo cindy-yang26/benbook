@@ -1,0 +1,143 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head>
+    <link rel="stylesheet"
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="upgrade-insecure-requests">
+<title>benbook</title>
+<link type="text/css" href="../css/header.css" rel="stylesheet" />
+</head>
+<body>
+    <script src="https://code.jquery.com/jquery-3.1.1.js"></script>
+    <script type="text/javascript">
+        function dropDown() {
+            document.getElementById("dropdown").classList.toggle("show");
+        }
+        var searchInput = function(text) {
+            console.log(text)
+            $(document).ready(function() {
+                $.ajax({
+                    type: "POST", 
+                    url: "/searchterm", 
+                    data: {
+                        searchTerm: text
+                    }, 
+                    success: function(data) {
+                        console.log("HEREEE")
+                        console.log(data)
+                        renderSearches(data)
+                    }, 
+                    error: function(data) {
+                        alert("An error occurred, please try again.")
+                    }
+                })
+            })
+        }
+
+        var checkSearch = function(uName) {
+            $(document).ready(function() {
+                $.ajax({
+                    type: "POST", 
+                    url: "/userprofile", 
+                    data: {
+                        user: uName
+                    }, 
+                    success: function(data) {
+                        console.log("Data: " + data)
+                        if (data.Items) {
+                            window.location.href = "/wall?username="+uName
+                        } else {
+                            window.location.href = "/error"
+                        }
+                    }, 
+                    error: function(data) {
+                        alert("An error occurred, please try again.")
+                    }
+                })
+            })
+        }
+
+        var renderSearches = function(data) {
+            while (document.getElementById("searchSugg").firstChild) {
+                document.getElementById("searchSugg").removeChild(document.getElementById("searchSugg").firstChild)
+            }
+            for (var i = 0; i < data.length; i++) {
+                const uName = data[i][0].S
+                const userDiv = document.createElement("div")
+                userDiv.id = "userSuggestion"+uName
+                userDiv.className = "userSugg"
+                userDiv.addEventListener("click", function() {
+                    var sugg = document.getElementById("usernameSugg"+uName).textContent
+                    document.getElementById("searchInput").value = sugg
+                    window.location.href = "/wall?username="+uName
+                })
+                const username = document.createElement("p")
+                username.id = "usernameSugg"+uName
+                username.className = "usernameSugg"
+                var input = document.getElementById("searchInput").value
+                if ((data[i][0].S).startsWith(input)) {
+                    username.append(document.createTextNode(input))
+                    const span = document.createElement("SPAN")
+                    span.id = "boldUname"
+                    span.append(document.createTextNode(data[i][0].S.substr(input.length)))
+                    username.append(span);
+                } else {
+                    username.append(document.createTextNode(data[i][0].S))
+                }
+                const fullname = document.createElement("p")
+                fullname.id = "fullnameSugg"
+                fullname.append(document.createTextNode("(" + data[i][1].S + ")"))
+                userDiv.appendChild(username)
+                userDiv.appendChild(fullname)
+                document.getElementById("searchSugg").appendChild(userDiv)
+            }
+        }
+
+        window.onload = function() {
+            // apparently we need 2 for different devices ? 
+            document.getElementById("searchInput").addEventListener("input", function() {
+                searchInput(document.getElementById("searchInput").value)
+            })
+            document.getElementById("searchInput").addEventListener("propertychange", function() {
+                searchInput(document.getElementById("searchInput").value)
+            })
+            document.getElementById("searchBtn").addEventListener("click", function() {
+                var uName = document.getElementById("searchInput").value
+                if (uName.length > 0) {
+                    checkSearch(uName)
+                }
+            })
+        }
+
+        var closeReqs = function() {
+            while (document.getElementById("searchSugg").firstChild) {
+                document.getElementById("searchSugg").removeChild(document.getElementById("searchSugg").firstChild)
+            }
+        }
+        document.addEventListener("click", function (e) {
+            closeReqs();
+        });
+    </script>
+    <div class="header">
+		<div class="logo">
+            benbook
+        </div>
+        <div class="search">
+            <input id="searchInput" type="text" placeholder="Search..."></input>
+            <button id="searchBtn" type="button"><span class="glyphicon glyphicon-search" style="padding:3px"></span></button>
+        </div>
+        <div class="links">
+            <a href="/homepage">Home</a>
+            <a href="/wall">My Wall</a>
+            <a href="/news">News</a>
+            <button onclick="dropDown()" id="profileBtn"><span class="glyphicon glyphicon-user"></span></button>
+        </div>
+    </div>
+    <div id="searchSugg"></div>
+    <div id="dropdown" class="content">
+        <a href="/editprofile">Edit my profile</a>
+        <a href="/logout">Logout</a>
+    </div>
+</body>
+</html>

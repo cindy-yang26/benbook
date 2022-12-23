@@ -1,0 +1,36 @@
+html, body {
+    background-color:#d1d7ea;
+    margin-bottom:20px;
+}
+.head {
+    text-align:center;
+    font-weight:bold;
+    color:rgb(101, 98, 98);
+}
+.text {
+    text-align:center;
+    width:40%;
+    margin:auto;
+    line-height:1.5;
+}
+#btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-top:15px;
+}
+#home {
+    font-weight:bold;
+    background-color:#4267B2;
+}
+#home:hover {
+    transition:0.2s;
+    background-color:#2b416e;
+}
+img {
+    display:block;
+    margin:auto;
+    margin-top:12%;
+    width:10%;
+    height:10%;
+}
