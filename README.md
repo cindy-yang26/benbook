@@ -1,10 +1,10 @@
 ## benbook
 
 <p float="left">
- <img src="https://user-images.githubusercontent.com/59887357/210921614-3c154186-f093-4ec7-b892-564bd57a2b88.png" width="500" alt="homepage">
- <img src="https://user-images.githubusercontent.com/59887357/210922106-a4ee9102-e09b-42e2-8355-844426dca83f.png" width="500" alt="wall">
- <img src="https://user-images.githubusercontent.com/59887357/210922038-02c0a622-272c-405c-a2bd-f2b4d0cc011a.png" width="500" alt="chat">
- <img src="https://user-images.githubusercontent.com/59887357/210922288-219dda3b-62b9-48d3-aa90-7599afed6ec0.png" width="500" alt="news">
+ <img src="https://user-images.githubusercontent.com/59887357/210921614-3c154186-f093-4ec7-b892-564bd57a2b88.png" width="400" alt="homepage">
+ <img src="https://user-images.githubusercontent.com/59887357/210922106-a4ee9102-e09b-42e2-8355-844426dca83f.png" width="400" alt="wall">
+ <img src="https://user-images.githubusercontent.com/59887357/210922038-02c0a622-272c-405c-a2bd-f2b4d0cc011a.png" width="400" alt="chat">
+ <img src="https://user-images.githubusercontent.com/59887357/210922288-219dda3b-62b9-48d3-aa90-7599afed6ec0.png" width="400" alt="news">
 </p>
 
 Names: 
